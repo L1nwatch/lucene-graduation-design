@@ -108,7 +108,9 @@ h3 {
 	margin: 0 auto;
 	padding: 0 auto;
 }
-
+.newsnum{
+	color:red;
+}
 .item {
 	padding-bottom: 0px;
 	border-right: 1px solid #cccccc;

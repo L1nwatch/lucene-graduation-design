@@ -7,6 +7,8 @@
 <link rel="stylesheet" style="text/css" href="css/main.css">
 <link rel="stylesheet" style="text/css" href="css/bootstrap.min.css">
 <title>UCAS IR</title>
+<script type="text/javascript">
+</script>
 </head>
 <body>
 	<div class="main">
@@ -16,18 +18,18 @@
 		<div class="searchbox">
 			<div class="searchform">
 				<form action="search" method="get">
-					<input type="text" name="query"> <input type="submit"
+					<input type="text" name="query" id="query" value=" "> <input type="submit"
 						value="果壳搜索">
 				</form>
 			</div>
 		</div>
-		
+
 		<div class="footer">
-		   <ul>
-		     <li>现代信息检索</li>
-		     <li>工程类大作业</li>
-		     <li>小组成员:姚攀 汤建明 郝克林 张钟 肖竹</li>
-		   </ul>
+			<ul>
+				<li>现代信息检索</li>
+				<li>工程类大作业</li>
+				<li>小组成员:姚攀 汤建明 郝克林 张钟 肖竹</li>
+			</ul>
 		</div>
 	</div>
 </body>
