@@ -1,5 +1,10 @@
 @CHARSET "UTF-8";
 
+* {
+	margin: 0;
+	padding: 0;
+}
+
 body {
 	margin: 0;
 	padding: 0;
@@ -52,7 +57,14 @@ body {
 	border: 1px solid #cccccc;
 	display: inline-block;
 }
-
+.sortPick {
+	width:50%;
+	margin-left: 30%;
+	margin-top: 5px;
+}
+.sortPick input[type="radio"]{
+	width:10%;
+} 
 .footer {
 	margin-top: 160px;
 	color: #1b7bf2;
@@ -61,6 +73,7 @@ body {
 .footer ul {
 	width: 80%;
 	margin: 0 auto;
+	margin-left:25%;
 }
 
 .footer ul li {
@@ -77,28 +90,34 @@ body {
 	height: 80px;
 	float: left;
 }
-.nav_left img{
-	width:100%;
-	height:100%;
+
+.nav_left img {
+	width: 100%;
+	height: 100%;
 }
+
 .nav_right {
 	height: 80px;
 }
-.nav_right input[type="text"]{
-	height:31px;
-	width:50%;
-    margin-top: 20px;
-    margin-left: 3%;
+
+.nav_right input[type="text"] {
+	height: 31px;
+	width: 50%;
+	margin-top: 20px;
+	margin-left: 3%;
 }
-.nav_right input[type="submit"]{
+
+.nav_right input[type="submit"] {
 	height: 30px;
 	background-color: transparent;
 	border: 1px solid #cccccc;
-	width:10%;
+	width: 10%;
 }
-.nav_form{
-	margin:0;
+
+.nav_form {
+	margin: 0;
 }
+
 .newmain {
 	width: 60%;
 	margin-left: 10%;
@@ -108,14 +127,15 @@ h3 {
 	margin: 0 auto;
 	padding: 0 auto;
 }
-.newsnum{
-	color:red;
+
+.newsnum {
+	color: red;
 }
+
 .item {
 	padding-bottom: 0px;
 	border-right: 1px solid #cccccc;
 	overflow: hidden;
-	padding-top: 15px;
 }
 
 .item a:link, .item a:visited {
@@ -130,4 +150,26 @@ h3 {
 
 .item span {
 	color: red;
+}
+
+/*paging*/
+.paging {
+	width: 80%;
+	margin: 0px auto;
+}
+
+.paging ul {
+	list-style: none;
+	height: 20px;
+}
+
+.paging ul li {
+	float: left;
+	padding-left: 30px;
+}
+.paging hr{height:1px;margin:0;width:75%;}
+/*footerinfo*/
+.footerinfo {
+	margin: 5px auto;
+	width: 40%;
 }

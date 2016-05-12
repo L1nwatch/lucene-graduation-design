@@ -7,8 +7,6 @@
 <link rel="stylesheet" style="text/css" href="css/main.css">
 <link rel="stylesheet" style="text/css" href="css/bootstrap.min.css">
 <title>UCAS IR</title>
-<script type="text/javascript">
-</script>
 </head>
 <body>
 	<div class="main">
@@ -17,7 +15,7 @@
 		</div>
 		<div class="searchbox">
 			<div class="searchform">
-				<form action="search" method="get">
+				<form action="search?p=1" method="get">
 					<input type="text" name="query" id="query" value=" "> <input type="submit"
 						value="果壳搜索">
 				</form>

@@ -2,67 +2,104 @@ package ucas.ir.pojo;
 
 public class News {
    
-	private String title;
-	private String cat;
-	private String source;
-	private String url;
-	private String summary;
-	private String keyword;
+	private String id;//news id
+	private String Title;//news title
+	private String Keyword;//key words of news
+	private String Time;//news post time
+	private String Source;//news source
+	private String Artical;//news content
+	private String Total;//total number of people
+	private String URL;//news url
+	private String Reply;//reply number
+	private String Show;//review number
+	public String getId() {
+		return id;
+	}
+	public void setId(String id) {
+		this.id = id;
+	}
 	public String getTitle() {
-		return title;
+		return Title;
 	}
 	public void setTitle(String title) {
-		this.title = title;
-	}
-	public String getCat() {
-		return cat;
-	}
-	public void setCat(String cat) {
-		this.cat = cat;
-	}
-	public String getSource() {
-		return source;
-	}
-	public void setSource(String source) {
-		this.source = source;
-	}
-	public String getUrl() {
-		return url;
-	}
-	public void setUrl(String url) {
-		this.url = url;
-	}
-	public String getSummary() {
-		return summary;
-	}
-	public void setSummary(String summary) {
-		this.summary = summary;
+		Title = title;
 	}
 	public String getKeyword() {
-		return keyword;
+		return Keyword;
 	}
 	public void setKeyword(String keyword) {
-		this.keyword = keyword;
+		Keyword = keyword;
+	}
+	public String getTime() {
+		return Time;
+	}
+	public void setTime(String time) {
+		Time = time;
+	}
+	public String getSource() {
+		return Source;
+	}
+	public void setSource(String source) {
+		Source = source;
+	}
+	public String getArtical() {
+		return Artical;
+	}
+	public void setArtical(String artical) {
+		Artical = artical;
+	}
+	public String getTotal() {
+		return Total;
+	}
+	public void setTotal(String total) {
+		Total = total;
+	}
+	public String getURL() {
+		return URL;
+	}
+	public void setURL(String uRL) {
+		URL = uRL;
+	}
+	public String getReply() {
+		return Reply;
+	}
+	public void setReply(String reply) {
+		Reply = reply;
+	}
+	public String getShow() {
+		return Show;
+	}
+	public void setShow(String show) {
+		Show = show;
+	}
+	public News() {
+		super();
+		// TODO Auto-generated constructor stub
+	}
+	public News(String id, String title, String keyword, String time, String source, String artical, String total,
+			String uRL, String reply, String show) {
+		super();
+		this.id = id;
+		Title = title;
+		Keyword = keyword;
+		Time = time;
+		Source = source;
+		Artical = artical;
+		Total = total;
+		URL = uRL;
+		Reply = reply;
+		Show = show;
 	}
 	@Override
 	public String toString() {
-		return "News [title=" + title + ", cat=" + cat + ", source=" + source + ", url=" + url + ", summary=" + summary
-				+ ", keyword=" + keyword + "]";
+		return "News [id=" + id + ", Title=" + Title + ", Keyword=" + Keyword + ", Time=" + Time + ", Source=" + Source
+				+ ", Artical=" + Artical + ", Total=" + Total + ", URL=" + URL + ", Reply=" + Reply + ", Show=" + Show
+				+ "]";
 	}
+
 	
 	
-	public News() {
-		super();
-	}
-	public News(String title, String cat, String source, String url, String summary, String keyword) {
-		super();
-		this.title = title;
-		this.cat = cat;
-		this.source = source;
-		this.url = url;
-		this.summary = summary;
-		this.keyword = keyword;
-	}
+	
 	
 	
 	

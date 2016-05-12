@@ -9,11 +9,8 @@ import java.util.Iterator;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
-import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.document.*;
-import org.apache.lucene.document.StringField;
-import org.apache.lucene.document.TextField;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.IndexWriterConfig.OpenMode;
@@ -45,7 +42,7 @@ public class CreateIndex {
 		IndexWriter indexWriter = null;
 
 		try {
-			File indexpath = new File("/Users/yp/Documents/workspace/UCASIR/WebContent/index");
+			File indexpath = new File("./WebContent/index");
 			if (indexpath.exists() != true) {
 				indexpath.mkdirs();
 			}
@@ -66,16 +63,22 @@ public class CreateIndex {
 
 		while (iter.hasNext()) {
 			// System.out.println(iter.next());
-			News news = getNews("./WebContent/data/" + iter.next());
-			System.out.println(news.getTitle());
+			News news = getNews("/Volumes/My Passport/IR/sportnews/" + iter.next());
 			Document doc = new Document();
-			doc.add(new TextField("news_title", news.getTitle(), Store.YES));
-			doc.add(new TextField("news_cat", news.getCat(), Store.YES));
-			doc.add(new TextField("news_source", news.getSource(), Store.YES));
-			doc.add(new TextField("news_url", news.getUrl(), Store.YES));
-			doc.add(new TextField("news_summary", news.getSummary(), Store.YES));
-			doc.add(new TextField("news_keyword", news.getKeyword(), Store.YES));
+			if(news!=null){
+			System.out.println(news.getTitle());
 
+			doc.add(new TextField("news_id", news.getId(), Store.YES));
+			doc.add(new TextField("news_title", news.getTitle(), Store.YES));
+			doc.add(new TextField("news_keywords", news.getKeyword(), Store.YES));
+			doc.add(new TextField("news_posttime", news.getTime(), Store.YES));
+			doc.add(new TextField("news_source", news.getSource(), Store.YES));
+			doc.add(new TextField("news_article", news.getArtical(), Store.YES));
+			doc.add(new TextField("news_total", news.getTotal(), Store.YES));
+			doc.add(new TextField("news_url", news.getURL(), Store.YES));
+			doc.add(new TextField("news_reply", news.getReply(), Store.YES));
+			doc.add(new TextField("news_show", news.getShow(), Store.YES));
+			}
 			try {
 				indexWriter.addDocument(doc);
 				indexWriter.commit();
@@ -96,10 +99,10 @@ public class CreateIndex {
 
 	}
 
-	// 获取data目录下所有json文件的文件名,返回文件名数组
+	// 获取news目录下所有json文件的文件名,返回文件名数组
 	public static ArrayList<String> getfileName() {
 		ArrayList<String> arrlist = new ArrayList<String>();
-		File dataPth = new File("./WebContent/data");
+		File dataPth = new File("/Volumes/My Passport/IR/sportnews");
 		if (dataPth.exists()) {
 
 			File[] allFiles = dataPth.listFiles();
@@ -119,23 +122,24 @@ public class CreateIndex {
 		try {
 			JsonParser jParser = new JsonParser();
 			JsonObject jObject = (JsonObject) jParser.parse(new FileReader(path));
-			String title = jObject.get("title").getAsString();
-			String cat = jObject.get("cat").getAsString();
-			String source = jObject.get("source").getAsString();
-			String url = jObject.get("url").getAsString();
-			String summary = jObject.get("summary").getAsString();
-			String keyword = jObject.get("keyword").getAsString();
-			news = new News(title, cat, source, url, summary, keyword);
+			String id = jObject.get("ID").getAsString();
+			String title = jObject.get("Title").getAsString().trim();
+			String keyword = jObject.get("Keyword").getAsString();
+			String time = jObject.get("Time").getAsString().trim();
+			String source = jObject.get("Source").getAsString();
+			String artical = jObject.get("Artical").getAsString();
+			String total = jObject.get("Total").getAsString();
+			String uRL = jObject.get("URL").getAsString();
+			String reply = jObject.get("Reply").getAsString();
+			String show = jObject.get("Show").getAsString();
 
-		} catch (JsonIOException e) {
-			e.printStackTrace();
-		} catch (JsonSyntaxException e) {
-			e.printStackTrace();
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		}
+			news = new News(id, title, keyword, time, source, artical, total, uRL, reply, show);
+			return news;
+		} catch (Exception e) {
+			return null;
+		} 
 
-		return news;
+		
 
 	}
 }

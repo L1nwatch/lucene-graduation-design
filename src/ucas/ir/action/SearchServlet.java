@@ -1,10 +1,11 @@
 package ucas.ir.action;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Stack;
 
 import javax.servlet.ServletException;
@@ -50,9 +51,12 @@ import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 
 import ucas.ir.pojo.News;
+import ucas.ir.pojo.Page;
 
 public class SearchServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
+	private static int totalnews = 0;
+	private static final int perpagecount = 5;
 
 	public SearchServlet() {
 		super();
@@ -61,30 +65,63 @@ public class SearchServlet extends HttpServlet {
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 		doPost(request, response);
-
+	
 	}
 
 	protected void doPost(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
+		// 表单参数处理
 		String query = request.getParameter("query");
 		query = new String(query.getBytes("iso8859-1"), "UTF-8");
-		if (query != null && "".equals(query) != true) {
-			request.setAttribute("query", query);
-			ArrayList<News> newsList = getTopDoc(query);
+
+		// 计算查询时间
+		long starTime = System.currentTimeMillis();// start time
+		String indexpathStr = request.getServletContext().getRealPath("/index");
+		if (query != null && " ".equals(query) != true) {
+
+			String pagenum = request.getParameter("p");
+			System.out.println("pagenum:" + pagenum);
+			int p = pagenum == null ? 1 : Integer.parseInt(pagenum);
+			System.out.println("p:" + p);
+
+			// 获取排序方式
+			String sortmethod = request.getParameter("sortnews");
+			System.out.println("排序方式:" + sortmethod);
+			ArrayList<News> newsList = getTopDoc(query, indexpathStr);
+
+			Page page = new Page(p, newsList.size() / perpagecount + 1, perpagecount, newsList.size(),
+					perpagecount * (p - 1), perpagecount * p, true,p==1?false:true);
+			System.out.println(page.toString());
+			if ("byTime".equals(sortmethod)) {
+
+				Collections.sort(newsList, new SortByTime());
+			}
+
+			List<News> pagelist = newsList.subList(perpagecount * (p - 1), perpagecount * p);
+			// 设置分页
+
 			System.out.println("servlet newslist length:" + newsList.size());
-			request.setAttribute("newslist", newsList);
+			request.setAttribute("query", query);
+			request.setAttribute("newslist", pagelist);
 			request.setAttribute("queryback", query);
+			request.setAttribute("totaln", totalnews);
+			long endTime = System.currentTimeMillis();// end time
+			long Time = endTime - starTime;
+			request.setAttribute("time", (double) Time / 1000);
+			request.setAttribute("page", page);
+			request.getRequestDispatcher("result.jsp").forward(request, response);
+		} else {
+			request.getRequestDispatcher("error.jsp").forward(request, response);
 		}
 
-		request.getRequestDispatcher("result.jsp").forward(request, response);
 	}
 
-	public static ArrayList<News> getTopDoc(String key) {
+	public static ArrayList<News> getTopDoc(String key, String indexpathStr) {
 		ArrayList<News> newsList = new ArrayList<News>();
 
 		Directory directory = null;
 		try {
-			File indexpath = new File("/Users/yp/Documents/workspace/UCASIR/WebContent/index");
+			File indexpath = new File(indexpathStr);
 			if (indexpath.exists() != true) {
 				indexpath.mkdirs();
 			}
@@ -94,34 +131,20 @@ public class SearchServlet extends HttpServlet {
 			DirectoryReader dReader = DirectoryReader.open(directory);
 			IndexSearcher searcher = new IndexSearcher(dReader);
 
-			String[] fields = { "news_title", "news_summary" };
+			String[] fields = { "news_title", "news_article" };
 			// 设置分词方式
 			Analyzer analyzer = new StandardAnalyzer(Version.LUCENE_43);// 标准分词
 			MultiFieldQueryParser parser2 = new MultiFieldQueryParser(Version.LUCENE_43, fields, analyzer);
 			Query query2 = parser2.parse(key);
-			TermQuery tq=new TermQuery(new Term("name", key));
-            PrefixQuery prefixQuery=new PrefixQuery(new Term("name",key));
-            PhraseQuery phraseQuery=new PhraseQuery();
-            phraseQuery.setSlop(3);
-            phraseQuery.add(new Term("field", "key1"));
-            phraseQuery.add(new Term("field", "key2"));
-            WildcardQuery wildcardQuery=new WildcardQuery(new Term("field", "基于?"));
-           
-            
-            BooleanQuery bQuery=new BooleanQuery();
-            bQuery.add(new TermQuery(new Term("title", "lucene")), Occur.MUST);
-            bQuery.add(new TermQuery(new Term("content", "基于")), Occur.SHOULD);
-            bQuery.add(new TermQuery(new Term("name", "java")), Occur.MUST_NOT);
-            
-            Query q = NumericRangeQuery.newFloatRange("weight", 0.03f, 0.10f, true, true);
-            QueryScorer scorer = new QueryScorer(query2, fields[0]);
+
+			QueryScorer scorer = new QueryScorer(query2, fields[0]);
 			SimpleHTMLFormatter fors = new SimpleHTMLFormatter("<span style=\"color:red;\">", "</span>");
 			Highlighter highlighter = new Highlighter(fors, scorer);
 			// 返回前10条
-			TopDocs topDocs = searcher.search(query2, 10);
+			TopDocs topDocs = searcher.search(query2, 500);
 			if (topDocs != null) {
-				System.out.println("符合条件第文档总数：" + topDocs.totalHits);
-
+				totalnews = topDocs.totalHits;
+				System.out.println("符合条件第文档总数：" + totalnews);
 				for (int i = 0; i < topDocs.scoreDocs.length; i++) {
 					Document doc = searcher.doc(topDocs.scoreDocs[i].doc);
 
@@ -129,15 +152,17 @@ public class SearchServlet extends HttpServlet {
 							topDocs.scoreDocs[i].doc, fields[0], analyzer);
 					Fragmenter fragment = new SimpleSpanFragmenter(scorer);
 					highlighter.setTextFragmenter(fragment);
-					
-					String hl_title=highlighter.getBestFragment(tokenStream, doc.get("news_title"));
 
-					
-					tokenStream = TokenSources.getAnyTokenStream(searcher.getIndexReader(),
-							topDocs.scoreDocs[i].doc, fields[1], analyzer);
-					String hl_summary=highlighter.getBestFragment(tokenStream, doc.get("news_summary"));
-					News news = new News(hl_title!=null?hl_title:doc.get("news_title"), doc.get("news_cat"), doc.get("news_source"),
-							doc.get("news_url"), hl_summary!=null?hl_summary:doc.get("news_summary"), doc.get("news_keyword"));
+					String hl_title = highlighter.getBestFragment(tokenStream, doc.get("news_title"));
+
+					tokenStream = TokenSources.getAnyTokenStream(searcher.getIndexReader(), topDocs.scoreDocs[i].doc,
+							fields[1], analyzer);
+					String hl_summary = highlighter.getBestFragment(tokenStream, doc.get("news_article"));
+
+					News news = new News(doc.get("news_id"), hl_title != null ? hl_title : doc.get("news_title"),
+							doc.get("news_keywords"), doc.get("news_posttime"), doc.get("news_source"),
+							hl_summary != null ? hl_summary : doc.get("news_article"), doc.get("news_total"),
+							doc.get("news_url"), doc.get("news_reply"), doc.get("news_show"));
 					newsList.add(news);
 
 				}
