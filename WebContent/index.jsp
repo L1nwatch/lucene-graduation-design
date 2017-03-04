@@ -1,34 +1,54 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8"
-         pageEncoding="UTF-8" %>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <!DOCTYPE html>
 <html>
 <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>HITS-毕业设计</title>
     <link rel="stylesheet" type="text/css" href="css/main.css">
-    <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
-    <title>UCAS IR</title>
+    <link rel="stylesheet" href="css/search_home_page_style.css">
 </head>
+
 <body>
+
 <div class="main">
     <div class="logo">
-        <img alt="logo" src="images/LOGO.png">
-    </div>
-    <div class="searchbox">
-        <div class="searchform">
-            <form action="search?p=1" method="get">
-                <input type="text" name="query" id="query" value=" "> <input type="submit"
-                                                                             value="果壳搜索">
-            </form>
-        </div>
+        <img alt="logo" src="images/logo.png">
     </div>
 
-    <div class="footer">
-        <ul>
-            <li>现代信息检索</li>
-            <li>工程类大作业</li>
-            <li>小组成员:姚攀 汤建明 郝克林 张钟 肖竹</li>
-        </ul>
+    <form id="searchbox" action="search?p=1" method="get">
+        <input id="search" type="text" name="query" placeholder="Type here">
+        <input id="submit" type="submit" value="Search">
+    </form>
+
+    <div class="byline">
+        <p>2017-西安电子科技大学-网络与信息安全学院-林丰-13030110024</p>
+        <p>毕业设计-designed by <a href="http://watch0.top">w@tch</a></p>
     </div>
 </div>
 </body>
 </html>
+
+
+<%--<form id="searchbox" action="search?p=1" method="get">--%>
+<%--<input name="query" id="search" type="text" placeholder="Type here">--%>
+<%--<input id="submit" type="submit" value="Search">--%>
+<%--</form>--%>
+
+<%--&lt;%&ndash;<div class="searchbox">&ndash;%&gt;--%>
+<%--&lt;%&ndash;<div class="searchform">&ndash;%&gt;--%>
+<%--&lt;%&ndash;<form action="search?p=1" method="get">&ndash;%&gt;--%>
+<%--&lt;%&ndash;<input type="text" name="query" id="query" value=" ">&ndash;%&gt;--%>
+<%--&lt;%&ndash;<input type="submit" value="search">&ndash;%&gt;--%>
+<%--&lt;%&ndash;</form>&ndash;%&gt;--%>
+<%--&lt;%&ndash;</div>&ndash;%&gt;--%>
+<%--&lt;%&ndash;</div>&ndash;%&gt;--%>
+
+<%--<div class="footer">--%>
+<%--<ul>--%>
+<%--<li>2017-西安电子科技大学</li>--%>
+<%--<li>网络与信息安全学院-林丰-13030110024</li>--%>
+<%--<li>毕业设计</li>--%>
+<%--</ul>--%>
+<%--</div>--%>
+<%--</div>--%>
+<%--</body>--%>
+<%--</html>--%>

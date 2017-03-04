@@ -11,7 +11,7 @@
 <body>
 <div class="nav">
     <div class="nav_left">
-        <a href="index.jsp"><img alt="logo" src="images/LOGO.png"></a>
+        <a href="index.jsp"><img alt="logo" src="images/watch-logo.png"></a>
     </div>
     <div class="nav_right">
         <div class="nav_form">

@@ -1,5 +1,7 @@
 <%@page language="java" contentType="text/html; charset=UTF-8"
-        pageEncoding="UTF-8" import="ucas.ir.pojo.*,java.util.*" %>
+        pageEncoding="UTF-8" import="web.src.models.*,java.util.*" %>
+<%@ page import="web.src.models.Page" %>
+<%@ page import="web.src.models.News" %>
 <%@taglib prefix="s" uri="/struts-tags" %>
 <%
     List<News> arrlist = (List<News>) request.getAttribute("newslist");
@@ -14,9 +16,8 @@
 <html>
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <title>UCAS IR</title>
+    <title>HITS-毕业设计</title>
     <link rel="stylesheet" type="text/css" href="css/main.css">
-    <!--  -->
     <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
     <script type="text/javascript">
         window.onload = function () {
@@ -28,8 +29,9 @@
 <body>
 <div class="nav">
     <div class="nav_left">
-        <a href="index.jsp"><img alt="logo" src="images/LOGO.png"></a>
+        <a href="index.jsp"><img alt="logo" src="images/logo.png"></a>
     </div>
+
     <div class="nav_right">
         <div class="nav_form">
             <form action="search" method="get">
@@ -65,7 +67,9 @@
             <a href="<%=news.getURL()%> " target="_blank"><%=news.getTitle()%>
             </a>
         </h4>
-        <p><%=news.getArtical().length() > 200 ? news.getArtical().substring(0, 200) : news.getArtical()%></br>
+        <p>
+            <%=news.getArtical().length() > 200 ? news.getArtical().substring(0, 200) : news.getArtical()%>
+            <br/>
             <a href=""><%=news.getURL()%>
             </a>
         </p>
@@ -92,7 +96,7 @@
     <hr>
 </div>
 <div class="footerinfo">
-    <p>现代信息检索 工程类搜索型&copy;2016 All Rights Reserved</p>
+    <p>2017-西电-网信院-林丰-13030110024-毕业设计-designed by <a href="http://watch0.top">w@tch</a></p>
 </div>
 </body>
 </html>
