@@ -36,7 +36,7 @@ import web.src.models.Page;
 public class SearchServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
     private static int totalnews = 0;
-    private static final int perpagecount = 5;
+    private static final int perPageCount = 5;
 
     public SearchServlet() {
         super();
@@ -69,15 +69,16 @@ public class SearchServlet extends HttpServlet {
             System.out.println("排序方式:" + sortmethod);
             ArrayList<News> newsList = getTopDoc(query, indexpathStr);
 
-            Page page = new Page(p, newsList.size() / perpagecount + 1, perpagecount, newsList.size(),
-                    perpagecount * (p - 1), perpagecount * p, true, p == 1 ? false : true);
+            Page page = new Page(p, newsList.size() / perPageCount + 1, perPageCount, newsList.size(),
+                    perPageCount * (p - 1), perPageCount * p, true, p == 1 ? false : true);
             System.out.println(page.toString());
             if ("byTime".equals(sortmethod)) {
-
                 Collections.sort(newsList, new SortByTime());
             }
 
-            List<News> pagelist = newsList.subList(perpagecount * (p - 1), perpagecount * p);
+            // 修正 BUG, 这里如果超出索引值, 参考: http://stackoverflow.com/questions/12099721/how-to-use-sublist
+            List<News> pagelist = newsList.subList(perPageCount * (p - 1),
+                    perPageCount * p > newsList.size() ? newsList.size() : perPageCount * p);
             // 设置分页
 
             System.out.println("servlet newslist length:" + newsList.size());
@@ -85,6 +86,7 @@ public class SearchServlet extends HttpServlet {
             request.setAttribute("newslist", pagelist);
             request.setAttribute("queryback", query);
             request.setAttribute("totaln", totalnews);
+            request.setAttribute("perPageCount", perPageCount);
             long endTime = System.currentTimeMillis();// end time
             long Time = endTime - starTime;
             request.setAttribute("time", (double) Time / 1000);
@@ -121,6 +123,7 @@ public class SearchServlet extends HttpServlet {
             SimpleHTMLFormatter fors = new SimpleHTMLFormatter("<span style=\"color:red;\">", "</span>");
             Highlighter highlighter = new Highlighter(fors, scorer);
             // 返回前10条
+            // TODO: HITS 算法插入位置
             TopDocs topDocs = searcher.search(query2, 500);
             if (topDocs != null) {
                 totalnews = topDocs.totalHits;

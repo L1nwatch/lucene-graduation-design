@@ -9,7 +9,7 @@
     int totalnews = (Integer) request.getAttribute("totaln");
     double time = Double.parseDouble(request.getAttribute("time").toString());
     Page pageInfo = (Page) request.getAttribute("page");
-    //out.print(arrlist.size());
+    int perPageCount = (Integer) request.getAttribute("perPageCount");  // 每一页要显示几个结果
     int p = 1, i;
 %>
 <!DOCTYPE html>
@@ -81,17 +81,47 @@
 </div>
 <div class="paging">
     <ul>
-        <li><a href="search?query=<%=queryback%>&&p=1">首页</a></li>
-        <li><a href="search?query=<%=queryback%>&&p=<%=pageInfo.getPage()-1==0?1:pageInfo.getPage()-1%>">上一页</a></li>
         <%
-            for (i = 1; i <= 10; i++) {
+            // 如果不是第一页
+            if (pageInfo.getPage() != 1) {
         %>
-        <li><a href="search?query=<%=queryback%>&&p=<%=i%>"><%=i%>
-        </a></li>
+        <li>
+            <a href="search?query=<%=queryback%>&&p=1">首页 </a>
+        </li>
+        <li>
+            <a href="search?query=<%=queryback%>&&p=<%=pageInfo.getPage()-1==0?1:pageInfo.getPage()-1%>">上一页</a>
+        </li>
         <%
             }
         %>
+        <%
+            // 总共有多少页
+            int totalPages = totalnews / perPageCount + 1;
+
+            // 超过 10 页, 只显示 10 页
+            if (pageInfo.getPage() + 10 < totalPages) {
+                // 则最多只显示 10 页
+                totalPages = pageInfo.getPage() + 10;
+            }
+
+            for (i = pageInfo.getPage(); i <= totalPages; i++) {
+        %>
+        <li>
+            <a href="search?query=<%=queryback%>&&p=<%=i%>">
+                <%=i%>
+            </a>
+        </li>
+        <%
+            }
+        %>
+        <%
+            // 如果当前页数 < 总页数
+            if (pageInfo.getPage() < totalnews / perPageCount + 1) {
+        %>
         <li><a href="search?query=<%=queryback%>&&p=<%=pageInfo.getPage()+1%>">下一页</a></li>
+        <%
+            }
+        %>
     </ul>
     <hr>
 </div>
