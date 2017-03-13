@@ -7,7 +7,8 @@ public class News {
     private String Keyword;//key words of news
     private String Time;//news post time
     private String Source;//news source
-    private String Artical;//news content
+    private String Article;//news content
+    private String Summary;
     private String Total;//total number of people
     private String URL;//news url
     private String Reply;//reply number
@@ -53,12 +54,37 @@ public class News {
         Source = source;
     }
 
-    public String getArtical() {
-        return Artical;
+    public String getArticle() {
+        return Article;
     }
 
-    public void setArtical(String artical) {
-        Artical = artical;
+    public String getSummary() {
+        if (this.getArticle().length() > 200) {
+            // 防止 <span> 标签被中途截断
+            int position = this.Article.lastIndexOf(new String("</span>"), 200);
+
+            if (position == -1) {
+                // 如果找不到 "</span>" 直接显示 200 个
+                return this.getArticle().substring(0, 200) + "...";
+            } else if (position < 200) {
+                // 如果找到了, 但是位置在 200 之前, 则再次查找 250 之前的 </span> 标签
+                position = this.Article.lastIndexOf(new String("</span>"), 250) + new String("</span>").length();
+                return this.getArticle().substring(0, position) + "...";
+            } else {
+                position = position + new String("</span>").length();
+                return this.getArticle().substring(0, position) + "...";
+            }
+        } else {
+            return this.getArticle();
+        }
+    }
+
+    public void setSummary(String summary) {
+        Summary = summary;
+    }
+
+    public void setArticle(String article) {
+        Article = article;
     }
 
     public String getTotal() {
@@ -106,7 +132,7 @@ public class News {
         Keyword = keyword;
         Time = time;
         Source = source;
-        Artical = artical;
+        Article = artical;
         Total = total;
         URL = uRL;
         Reply = reply;
@@ -116,7 +142,7 @@ public class News {
     @Override
     public String toString() {
         return "News [id=" + id + ", Title=" + Title + ", Keyword=" + Keyword + ", Time=" + Time + ", Source=" + Source
-                + ", Artical=" + Artical + ", Total=" + Total + ", URL=" + URL + ", Reply=" + Reply + ", Show=" + Show
+                + ", Article=" + Article + ", Total=" + Total + ", URL=" + URL + ", Reply=" + Reply + ", Show=" + Show
                 + "]";
     }
 

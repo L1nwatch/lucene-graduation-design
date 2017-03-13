@@ -68,7 +68,7 @@ public class CreateIndex {
                 doc.add(new TextField("news_keywords", news.getKeyword(), Store.YES));
                 doc.add(new TextField("news_posttime", news.getTime(), Store.YES));
                 doc.add(new TextField("news_source", news.getSource(), Store.YES));
-                doc.add(new TextField("news_article", news.getArtical(), Store.YES));
+                doc.add(new TextField("news_article", news.getArticle(), Store.YES));
                 doc.add(new TextField("news_total", news.getTotal(), Store.YES));
                 doc.add(new TextField("news_url", news.getURL(), Store.YES));
                 doc.add(new TextField("news_reply", news.getReply(), Store.YES));

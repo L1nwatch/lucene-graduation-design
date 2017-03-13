@@ -122,8 +122,8 @@ public class SearchServlet extends HttpServlet {
             QueryScorer scorer = new QueryScorer(query2, fields[0]);
             SimpleHTMLFormatter fors = new SimpleHTMLFormatter("<span style=\"color:red;\">", "</span>");
             Highlighter highlighter = new Highlighter(fors, scorer);
+
             // 返回前10条
-            // TODO: HITS 算法插入位置
             TopDocs topDocs = searcher.search(query2, 500);
             if (topDocs != null) {
                 totalnews = topDocs.totalHits;
@@ -137,7 +137,6 @@ public class SearchServlet extends HttpServlet {
                     highlighter.setTextFragmenter(fragment);
 
                     String hl_title = highlighter.getBestFragment(tokenStream, doc.get("news_title"));
-
                     tokenStream = TokenSources.getAnyTokenStream(searcher.getIndexReader(), topDocs.scoreDocs[i].doc,
                             fields[1], analyzer);
                     String hl_summary = highlighter.getBestFragment(tokenStream, doc.get("news_article"));
@@ -149,6 +148,9 @@ public class SearchServlet extends HttpServlet {
                     newsList.add(news);
 
                 }
+
+                // TODO: HITS 算法插入位置
+                newsList = newsList;
             }
 
         } catch (Exception e) {

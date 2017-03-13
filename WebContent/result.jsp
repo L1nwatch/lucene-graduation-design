@@ -66,7 +66,7 @@
             </a>
         </h4>
         <p>
-            <%=news.getArtical().length() > 200 ? news.getArtical().substring(0, 200) : news.getArtical()%>
+            <%=news.getSummary()%>
             <br/>
             <a href=""><%=news.getURL()%>
             </a>
