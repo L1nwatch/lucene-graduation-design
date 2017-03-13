@@ -40,7 +40,6 @@
                 <div class="sortPick">
                     按相关度排序 <input type="radio" value="byreRelevancy" name="sortnews" checked="checked">
                     按时间排序 <input type="radio" value="byTime" name="sortnews">
-
                 </div>
             </form>
 
@@ -50,9 +49,8 @@
 
 <div class="newmain">
     <h4>
-
-        共搜到<span class="newsnum"><%=totalnews%></span>条结果|用时<span
-            class="newsnum"><%=time%></span>秒
+        共搜到<span class="newsnum"><%=totalnews%></span>条结果
+        <% if (totalnews > 0) { %>| 用时<span class="newsnum"><%=time%></span>秒<% } %>
     </h4>
     <%
         if (arrlist.size() > 0) {
@@ -79,7 +77,13 @@
         }
     %>
 </div>
+
+
 <div class="paging">
+    <%
+        //搜索到相应结果
+        if (totalnews > 0) {
+    %>
     <ul>
         <%
             // 如果不是第一页
@@ -124,9 +128,32 @@
         %>
     </ul>
     <hr>
+    <%
+    } else {
+    %>
+    <p style="padding-top:.33em"> Your search - <em><%=queryback%>
+    </em> - did not match any documents.
+    </p>
+    <p style="margin-top:1em">Suggestions:</p>
+    <ul style="margin-left:1.3em;margin-bottom:7em">
+        <li>* Make sure that all words are spelled correctly.</li>
+        <br/>
+        <li>* Try different keywords.</li>
+        <br/>
+        <li>* Try more general keywords.</li>
+        <br/>
+        <li>* Try fewer keywords.</li>
+        <br/>
+    </ul>
+    <%
+        }
+    %>
 </div>
+
+
 <div class="footerinfo">
     <p>2017-西电-网信院-林丰-13030110024-毕业设计-designed by <a href="http://watch0.top">w@tch</a></p>
 </div>
+
 </body>
 </html>
