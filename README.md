@@ -29,3 +29,6 @@ fork 一下别人的平台, 基于这个平台进行修改好了, 省得重复�
 
 ![搜索界面截图](https://github.com/L1nwatch/lucene-graduation-design/blob/master/%E6%90%9C%E7%B4%A2%E7%BB%93%E6%9E%9C-min.jpg?raw=true)
 
+### 2017.03.14
+
+参考网上的 [HITS 算法实现](http://blog.csdn.net/androidlushangderen/article/details/43311943#), 把 DEMO 以及测试数据 copy 了过来, 打算先研究它的思路然后再自己重新优化一遍
