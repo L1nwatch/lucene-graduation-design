@@ -136,7 +136,6 @@ h3 {
 
 .item {
     padding-bottom: 0px;
-    border-right: 1px solid #cccccc;
     overflow: hidden;
 }
 
@@ -174,7 +173,7 @@ h3 {
     height: 1px;
     margin: 0;
     width: 75%;
-    background-color: #959595;
+    background-color: #dee4ff;
 }
 
 /*footerinfo*/
