@@ -2,17 +2,11 @@ package web.src.models;
 
 public class News {
 
-    private String id;//news id
-    private String Title;//news title
-    private String Keyword;//key words of news
-    private String Time;//news post time
-    private String Source;//news source
-    private String Article;//news content
-    private String Summary;
-    private String Total;//total number of people
-    private String URL;//news url
-    private String Reply;//reply number
-    private String Show;//review number
+    private String id;// 标记文档的 id
+    private String Title;// 文档的标题
+    private String Article;// 新闻正文内容
+    private String Summary;// 用于搜索结果的显示
+    private String URL;// 新闻 url
 
     public String getId() {
         return id;
@@ -30,29 +24,6 @@ public class News {
         Title = title;
     }
 
-    public String getKeyword() {
-        return Keyword;
-    }
-
-    public void setKeyword(String keyword) {
-        Keyword = keyword;
-    }
-
-    public String getTime() {
-        return Time;
-    }
-
-    public void setTime(String time) {
-        Time = time;
-    }
-
-    public String getSource() {
-        return Source;
-    }
-
-    public void setSource(String source) {
-        Source = source;
-    }
 
     public String getArticle() {
         return Article;
@@ -87,13 +58,6 @@ public class News {
         Article = article;
     }
 
-    public String getTotal() {
-        return Total;
-    }
-
-    public void setTotal(String total) {
-        Total = total;
-    }
 
     public String getURL() {
         return URL;
@@ -103,47 +67,22 @@ public class News {
         URL = uRL;
     }
 
-    public String getReply() {
-        return Reply;
-    }
-
-    public void setReply(String reply) {
-        Reply = reply;
-    }
-
-    public String getShow() {
-        return Show;
-    }
-
-    public void setShow(String show) {
-        Show = show;
-    }
 
     public News() {
         super();
-        // TODO Auto-generated constructor stub
     }
 
-    public News(String id, String title, String keyword, String time, String source, String artical, String total,
-                String uRL, String reply, String show) {
+    public News(String url, String content, String doc_number, String content_title) {
         super();
-        this.id = id;
-        Title = title;
-        Keyword = keyword;
-        Time = time;
-        Source = source;
-        Article = artical;
-        Total = total;
-        URL = uRL;
-        Reply = reply;
-        Show = show;
+        this.id = doc_number;
+        Title = content_title;
+        Article = content;
+        URL = url;
     }
 
     @Override
     public String toString() {
-        return "News [id=" + id + ", Title=" + Title + ", Keyword=" + Keyword + ", Time=" + Time + ", Source=" + Source
-                + ", Article=" + Article + ", Total=" + Total + ", URL=" + URL + ", Reply=" + Reply + ", Show=" + Show
-                + "]";
+        return "News [id=" + id + ", Title=" + Title + ", Article=" + Article + ", URL=" + URL + "]";
     }
 
 

@@ -22,9 +22,11 @@ import com.google.gson.JsonParser;
 
 import web.src.models.News;
 
-public class CreateIndex {
 
-    public static void main(String[] args) {
+public class CreateIndex {
+    static String source_data_path = "/Users/L1n/Desktop/Code/Python/PyCharm/xml转json/xml2json_result/";
+
+    public static void main(String[] args) throws IOException {
         // 第一步：创建分词器
         Analyzer analyzer = new StandardAnalyzer(Version.LUCENE_43);
         // 第二步：创建indexWriter配置信息
@@ -36,8 +38,9 @@ public class CreateIndex {
         // 第五步:创建indexWriter,用于索引第增删改.
         IndexWriter indexWriter = null;
 
+        // 创建索引要保存的路径
         try {
-            File indexpath = new File("./WebContent/index");
+            File indexpath = new File("./WebContent/new_index");
             if (indexpath.exists() != true) {
                 indexpath.mkdirs();
             }
@@ -52,27 +55,20 @@ public class CreateIndex {
         }
 
         // 循环创建索引
-
-        ArrayList<String> filenamelist = getfileName();
-        Iterator<String> iter = filenamelist.iterator();
+        ArrayList<String> fileNameList = getFileName();
+        Iterator<String> iter = fileNameList.iterator();
 
         while (iter.hasNext()) {
             // System.out.println(iter.next());
-            News news = getNews("/Volumes/My Passport/IR/sportnews/" + iter.next());
+            News news = getNews(source_data_path + iter.next());
             Document doc = new Document();
             if (news != null) {
                 System.out.println(news.getTitle());
 
                 doc.add(new TextField("news_id", news.getId(), Store.YES));
                 doc.add(new TextField("news_title", news.getTitle(), Store.YES));
-                doc.add(new TextField("news_keywords", news.getKeyword(), Store.YES));
-                doc.add(new TextField("news_posttime", news.getTime(), Store.YES));
-                doc.add(new TextField("news_source", news.getSource(), Store.YES));
                 doc.add(new TextField("news_article", news.getArticle(), Store.YES));
-                doc.add(new TextField("news_total", news.getTotal(), Store.YES));
                 doc.add(new TextField("news_url", news.getURL(), Store.YES));
-                doc.add(new TextField("news_reply", news.getReply(), Store.YES));
-                doc.add(new TextField("news_show", news.getShow(), Store.YES));
             }
             try {
                 indexWriter.addDocument(doc);
@@ -95,11 +91,10 @@ public class CreateIndex {
     }
 
     // 获取news目录下所有json文件的文件名,返回文件名数组
-    public static ArrayList<String> getfileName() {
-        ArrayList<String> arrlist = new ArrayList<String>();
-        File dataPth = new File("/Volumes/My Passport/IR/sportnews");
+    public static ArrayList<String> getFileName() {
+        ArrayList<String> arrlist = new ArrayList<>();
+        File dataPth = new File(source_data_path);
         if (dataPth.exists()) {
-
             File[] allFiles = dataPth.listFiles();
             for (int i = 0; i < allFiles.length; i++) {
                 arrlist.add(allFiles[i].getName().toString());
@@ -112,26 +107,22 @@ public class CreateIndex {
 
     // 把json文件解析为News对象,返回值为News对象
 
-    public static News getNews(String path) {
+    public static News getNews(String path) throws IOException {
         News news = new News();
         try {
             JsonParser jParser = new JsonParser();
             JsonObject jObject = (JsonObject) jParser.parse(new FileReader(path));
-            String id = jObject.get("ID").getAsString();
-            String title = jObject.get("Title").getAsString().trim();
-            String keyword = jObject.get("Keyword").getAsString();
-            String time = jObject.get("Time").getAsString().trim();
-            String source = jObject.get("Source").getAsString();
-            String artical = jObject.get("Artical").getAsString();
-            String total = jObject.get("Total").getAsString();
-            String uRL = jObject.get("URL").getAsString();
-            String reply = jObject.get("Reply").getAsString();
-            String show = jObject.get("Show").getAsString();
 
-            news = new News(id, title, keyword, time, source, artical, total, uRL, reply, show);
+            String url = jObject.get("url").getAsString();
+            String content = jObject.get("content").getAsString();
+            String doc_number = jObject.get("doc_number").getAsString();
+            String content_title = jObject.get("content_title").getAsString();
+
+            news = new News(url, content, doc_number, content_title);
             return news;
-        } catch (Exception e) {
-            return null;
+        } catch (IOException e) {
+            System.out.println("解析 JSON 出错");
+            throw e;
         }
 
 

@@ -56,7 +56,7 @@ public class SearchServlet extends HttpServlet {
 
         // 计算查询时间
         long starTime = System.currentTimeMillis();// start time
-        String indexpathStr = request.getSession().getServletContext().getRealPath("/index");
+        String indexPathStr = request.getSession().getServletContext().getRealPath("/new_index");
         if (query != null && " ".equals(query) != true) {
 
             String pagenum = request.getParameter("p");
@@ -67,23 +67,22 @@ public class SearchServlet extends HttpServlet {
             // 获取排序方式
             String sortmethod = request.getParameter("sortnews");
             System.out.println("排序方式:" + sortmethod);
-            ArrayList<News> newsList = getTopDoc(query, indexpathStr);
+            ArrayList<News> newsList = getTopDoc(query, indexPathStr);
 
             Page page = new Page(p, newsList.size() / perPageCount + 1, perPageCount, newsList.size(),
                     perPageCount * (p - 1), perPageCount * p, true, p == 1 ? false : true);
             System.out.println(page.toString());
             if ("byTime".equals(sortmethod)) {
-                Collections.sort(newsList, new SortByTime());
+//                Collections.sort(newsList, new SortByTime());
             }
 
             // 修正 BUG, 这里如果超出索引值, 参考: http://stackoverflow.com/questions/12099721/how-to-use-sublist
-            List<News> pagelist = newsList.subList(perPageCount * (p - 1),
+            List<News> pageList = newsList.subList(perPageCount * (p - 1),
                     perPageCount * p > newsList.size() ? newsList.size() : perPageCount * p);
             // 设置分页
-
             System.out.println("servlet newslist length:" + newsList.size());
             request.setAttribute("query", query);
-            request.setAttribute("newslist", pagelist);
+            request.setAttribute("newslist", pageList);
             request.setAttribute("queryback", query);
             request.setAttribute("totaln", totalnews);
             request.setAttribute("perPageCount", perPageCount);
@@ -98,17 +97,17 @@ public class SearchServlet extends HttpServlet {
 
     }
 
-    public static ArrayList<News> getTopDoc(String key, String indexpathStr) {
+    public static ArrayList<News> getTopDoc(String key, String indexPathStr) {
         ArrayList<News> newsList = new ArrayList<News>();
 
         Directory directory = null;
         try {
-            File indexpath = new File(indexpathStr);
-            if (indexpath.exists() != true) {
-                indexpath.mkdirs();
+            File indexPath = new File(indexPathStr);
+            if (indexPath.exists() != true) {
+                indexPath.mkdirs();
             }
             // 设置要查询的索引目录
-            directory = FSDirectory.open(indexpath);
+            directory = FSDirectory.open(indexPath);
             // 创建indexSearcher
             DirectoryReader dReader = DirectoryReader.open(directory);
             IndexSearcher searcher = new IndexSearcher(dReader);
@@ -141,10 +140,10 @@ public class SearchServlet extends HttpServlet {
                             fields[1], analyzer);
                     String hl_summary = highlighter.getBestFragment(tokenStream, doc.get("news_article"));
 
-                    News news = new News(doc.get("news_id"), hl_title != null ? hl_title : doc.get("news_title"),
-                            doc.get("news_keywords"), doc.get("news_posttime"), doc.get("news_source"),
-                            hl_summary != null ? hl_summary : doc.get("news_article"), doc.get("news_total"),
-                            doc.get("news_url"), doc.get("news_reply"), doc.get("news_show"));
+                    News news = new News(doc.get("news_url"),
+                            hl_summary != null ? hl_summary : doc.get("news_article"),
+                            doc.get("news_id"),
+                            hl_title != null ? hl_title : doc.get("news_title"));
                     newsList.add(news);
 
                 }
