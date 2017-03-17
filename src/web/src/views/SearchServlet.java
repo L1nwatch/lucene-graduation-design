@@ -124,8 +124,8 @@ public class SearchServlet extends HttpServlet {
             Query query2 = parser2.parse(key);
 
             QueryScorer scorer = new QueryScorer(query2, fields[0]);
-            SimpleHTMLFormatter fors = new SimpleHTMLFormatter("<span style=\"color:red;\">", "</span>");
-//            Highlighter highlighter = new Highlighter(fors, scorer);
+            SimpleHTMLFormatter formatter = new SimpleHTMLFormatter("<span style=\"color:red;\">", "</span>");
+            Highlighter highLighter = new Highlighter(formatter, scorer);
 
             // 返回前10条
             TopDocs topDocs = searcher.search(query2, 500);
@@ -135,39 +135,29 @@ public class SearchServlet extends HttpServlet {
                 for (int i = 0; i < topDocs.scoreDocs.length; i++) {
                     Document doc = searcher.doc(topDocs.scoreDocs[i].doc);
 
-//                    TokenStream tokenStream = TokenSources.getAnyTokenStream(searcher.getIndexReader(),
-//                            topDocs.scoreDocs[i].doc, fields[0], paodingAnalyzer);
+                    // 设置高亮
+                    highLighter.setTextFragmenter(new SimpleSpanFragmenter(scorer));
 
+                    // 设置 title 高亮
+                    TokenStream tokenStream = TokenSources.getAnyTokenStream(searcher.getIndexReader(),
+                            topDocs.scoreDocs[i].doc, fields[0], new PaodingAnalyzer());
+                    String highTitle = highLighter.getBestFragment(tokenStream, doc.get(fields[0]));
 
-//                    TokenStream tokenStream = paodingAnalyzer.tokenStream("text", new StringReader(doc.get("news_title")));
-//                    tokenStream.reset();
-                    // 添加工具类 注意：以下这些与之前lucene2.x版本不同的地方
-//                    CharTermAttribute offAtt = ts.addAttribute(CharTermAttribute.class);
+                    // 设置 content 高亮
+                    tokenStream = TokenSources.getAnyTokenStream(searcher.getIndexReader(), topDocs.scoreDocs[i].doc,
+                            fields[1], new PaodingAnalyzer());
+                    String fragmentSeparator = "...";
+                    int maxNumFragmentsRequired = 1;
+                    String highContent = highLighter.getBestFragments(tokenStream, doc.get(fields[1]),
+                            maxNumFragmentsRequired, fragmentSeparator);
 
-//                    SimpleHTMLFormatter formatter = new SimpleHTMLFormatter("<fontcolor='red'><b>","</b></font>");
-
-//                    Highlighter highlighter = new Highlighter(formatter, new QueryScorer(query2));
-//                    highlighter.setTextFragmenter(new SimpleFragmenter(50));
-
-//                    Fragmenter fragment = new SimpleSpanFragmenter(scorer);
-//                    highlighter.setTextFragmenter(fragment);
-
-//                    String hl_title = highlighter.getBestFragment(tokenStream, doc.get("news_title"));
-//                    tokenStream = TokenSources.getAnyTokenStream(searcher.getIndexReader(), topDocs.scoreDocs[i].doc,
-//                            fields[1], paodingAnalyzer);
-//                    String hl_summary = highlighter.getBestFragment(tokenStream, doc.get("news_article"));
-                    //  原始的 article 长度
+                    // 原始的 article 长度
                     int raw_article_length = doc.get("news_article").length();
 
-//                    News news = new News(doc.get("news_url"),
-//                            hl_summary != null ? hl_summary : doc.get("news_article"),
-//                            doc.get("news_id"),
-//                            hl_title != null ? hl_title : doc.get("news_title"),
-//                            raw_article_length);
                     News news = new News(doc.get("news_url"),
-                            doc.get("news_article"),
+                            highContent != null ? highContent : doc.get("news_article"),
                             doc.get("news_id"),
-                            doc.get("news_title"),
+                            highTitle != null ? highTitle : doc.get("news_title"),
                             raw_article_length);
                     newsList.add(news);
 
