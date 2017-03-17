@@ -2,6 +2,7 @@ package web.src.views;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -13,7 +14,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
-import org.apache.lucene.analysis.standard.StandardAnalyzer;
+//import org.apache.lucene.analysis.standard.StandardAnalyzer;  // 单字分词, 已弃用
+import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.queryparser.classic.MultiFieldQueryParser;
@@ -32,6 +34,7 @@ import org.apache.lucene.util.Version;
 
 import web.src.models.News;
 import web.src.models.Page;
+import net.paoding.analysis.analyzer.PaodingAnalyzer;
 
 public class SearchServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
@@ -114,13 +117,15 @@ public class SearchServlet extends HttpServlet {
 
             String[] fields = {"news_title", "news_article"};
             // 设置分词方式
-            Analyzer analyzer = new StandardAnalyzer(Version.LUCENE_43);// 标准分词
-            MultiFieldQueryParser parser2 = new MultiFieldQueryParser(Version.LUCENE_43, fields, analyzer);
+            // Analyzer analyzer = new StandardAnalyzer(Version.LUCENE_43);// 标准分词
+            Analyzer paodingAnalyzer = new PaodingAnalyzer();   // paoding 分词
+
+            MultiFieldQueryParser parser2 = new MultiFieldQueryParser(Version.LUCENE_43, fields, paodingAnalyzer);
             Query query2 = parser2.parse(key);
 
             QueryScorer scorer = new QueryScorer(query2, fields[0]);
             SimpleHTMLFormatter fors = new SimpleHTMLFormatter("<span style=\"color:red;\">", "</span>");
-            Highlighter highlighter = new Highlighter(fors, scorer);
+//            Highlighter highlighter = new Highlighter(fors, scorer);
 
             // 返回前10条
             TopDocs topDocs = searcher.search(query2, 500);
@@ -130,22 +135,39 @@ public class SearchServlet extends HttpServlet {
                 for (int i = 0; i < topDocs.scoreDocs.length; i++) {
                     Document doc = searcher.doc(topDocs.scoreDocs[i].doc);
 
-                    TokenStream tokenStream = TokenSources.getAnyTokenStream(searcher.getIndexReader(),
-                            topDocs.scoreDocs[i].doc, fields[0], analyzer);
-                    Fragmenter fragment = new SimpleSpanFragmenter(scorer);
-                    highlighter.setTextFragmenter(fragment);
+//                    TokenStream tokenStream = TokenSources.getAnyTokenStream(searcher.getIndexReader(),
+//                            topDocs.scoreDocs[i].doc, fields[0], paodingAnalyzer);
 
-                    String hl_title = highlighter.getBestFragment(tokenStream, doc.get("news_title"));
-                    tokenStream = TokenSources.getAnyTokenStream(searcher.getIndexReader(), topDocs.scoreDocs[i].doc,
-                            fields[1], analyzer);
-                    String hl_summary = highlighter.getBestFragment(tokenStream, doc.get("news_article"));
+
+//                    TokenStream tokenStream = paodingAnalyzer.tokenStream("text", new StringReader(doc.get("news_title")));
+//                    tokenStream.reset();
+                    // 添加工具类 注意：以下这些与之前lucene2.x版本不同的地方
+//                    CharTermAttribute offAtt = ts.addAttribute(CharTermAttribute.class);
+
+//                    SimpleHTMLFormatter formatter = new SimpleHTMLFormatter("<fontcolor='red'><b>","</b></font>");
+
+//                    Highlighter highlighter = new Highlighter(formatter, new QueryScorer(query2));
+//                    highlighter.setTextFragmenter(new SimpleFragmenter(50));
+
+//                    Fragmenter fragment = new SimpleSpanFragmenter(scorer);
+//                    highlighter.setTextFragmenter(fragment);
+
+//                    String hl_title = highlighter.getBestFragment(tokenStream, doc.get("news_title"));
+//                    tokenStream = TokenSources.getAnyTokenStream(searcher.getIndexReader(), topDocs.scoreDocs[i].doc,
+//                            fields[1], paodingAnalyzer);
+//                    String hl_summary = highlighter.getBestFragment(tokenStream, doc.get("news_article"));
                     //  原始的 article 长度
                     int raw_article_length = doc.get("news_article").length();
 
+//                    News news = new News(doc.get("news_url"),
+//                            hl_summary != null ? hl_summary : doc.get("news_article"),
+//                            doc.get("news_id"),
+//                            hl_title != null ? hl_title : doc.get("news_title"),
+//                            raw_article_length);
                     News news = new News(doc.get("news_url"),
-                            hl_summary != null ? hl_summary : doc.get("news_article"),
+                            doc.get("news_article"),
                             doc.get("news_id"),
-                            hl_title != null ? hl_title : doc.get("news_title"),
+                            doc.get("news_title"),
                             raw_article_length);
                     newsList.add(news);
 

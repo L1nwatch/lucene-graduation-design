@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.standard.StandardAnalyzer;
+//import org.apache.lucene.analysis.standard.StandardAnalyzer;  // 单字分词
 import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.document.*;
 import org.apache.lucene.index.IndexWriter;
@@ -21,7 +21,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 import web.src.models.News;
-
+import net.paoding.analysis.analyzer.PaodingAnalyzer;
 
 public class CreateIndex {
     // TODO: 这里采用的是 DEMO 数据
@@ -29,9 +29,11 @@ public class CreateIndex {
 
     public static void main(String[] args) throws IOException {
         // 第一步：创建分词器
-        Analyzer analyzer = new StandardAnalyzer(Version.LUCENE_43);
+        Analyzer paodingAnalyzer = new PaodingAnalyzer();   // paoding 分词
+        // Analyzer analyzer = new StandardAnalyzer(Version.LUCENE_43);  // 单字分词
+
         // 第二步：创建indexWriter配置信息
-        IndexWriterConfig indexWriterConfig = new IndexWriterConfig(Version.LUCENE_43, analyzer);
+        IndexWriterConfig indexWriterConfig = new IndexWriterConfig(Version.LUCENE_43, paodingAnalyzer);
         // 第三步：设置索引的打开方式
         indexWriterConfig.setOpenMode(OpenMode.CREATE);
         // 第四步：设置索引第路径

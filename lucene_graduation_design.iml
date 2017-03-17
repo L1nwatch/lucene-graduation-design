@@ -56,8 +56,6 @@
         <jarDirectory url="file://$MODULE_DIR$/WebContent/WEB-INF/lib" recursive="false" />
       </library>
     </orderEntry>
-    <orderEntry type="library" name="commons-logging-1.1.1" level="project" />
     <orderEntry type="library" scope="TEST" name="junit-4.8.2" level="project" />
-    <orderEntry type="library" name="jakarta-regexp-1.4" level="project" />
   </component>
 </module>
