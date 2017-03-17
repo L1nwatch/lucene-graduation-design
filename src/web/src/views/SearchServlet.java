@@ -139,11 +139,14 @@ public class SearchServlet extends HttpServlet {
                     tokenStream = TokenSources.getAnyTokenStream(searcher.getIndexReader(), topDocs.scoreDocs[i].doc,
                             fields[1], analyzer);
                     String hl_summary = highlighter.getBestFragment(tokenStream, doc.get("news_article"));
+                    //  原始的 article 长度
+                    int raw_article_length = doc.get("news_article").length();
 
                     News news = new News(doc.get("news_url"),
                             hl_summary != null ? hl_summary : doc.get("news_article"),
                             doc.get("news_id"),
-                            hl_title != null ? hl_title : doc.get("news_title"));
+                            hl_title != null ? hl_title : doc.get("news_title"),
+                            raw_article_length);
                     newsList.add(news);
 
                 }

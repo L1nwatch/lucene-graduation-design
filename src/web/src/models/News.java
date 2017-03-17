@@ -6,7 +6,16 @@ public class News {
     private String Title;// 文档的标题
     private String Article;// 新闻正文内容
     private String Summary;// 用于搜索结果的显示
+    private Integer ArticleLength;// 原来正文内容的长度
     private String URL;// 新闻 url
+
+    public Integer getArticleLength() {
+        return ArticleLength;
+    }
+
+    public void setArticleLength(Integer articleLength) {
+        ArticleLength = articleLength;
+    }
 
     public String getId() {
         return id;
@@ -24,29 +33,15 @@ public class News {
         Title = title;
     }
 
-
     public String getArticle() {
         return Article;
     }
 
     public String getSummary() {
-        if (this.getArticle().length() > 200) {
-            // 防止 <span> 标签被中途截断
-            int position = this.Article.lastIndexOf(new String("</span>"), 200);
-
-            if (position == -1) {
-                // 如果找不到 "</span>" 直接显示 200 个
-                return this.getArticle().substring(0, 200) + "...";
-            } else if (position < 200) {
-                // 如果找到了, 但是位置在 200 之前, 则再次查找 250 之前的 </span> 标签
-                position = this.Article.lastIndexOf(new String("</span>"), 250) + new String("</span>").length();
-                return this.getArticle().substring(0, position) + "...";
-            } else {
-                position = position + new String("</span>").length();
-                return this.getArticle().substring(0, position) + "...";
-            }
-        } else {
+        if (ArticleLength == this.getArticle().length()) {
             return this.getArticle();
+        } else {
+            return this.getArticle() + "...";
         }
     }
 
@@ -58,7 +53,6 @@ public class News {
         Article = article;
     }
 
-
     public String getURL() {
         return URL;
     }
@@ -67,11 +61,22 @@ public class News {
         URL = uRL;
     }
 
-
     public News() {
         super();
     }
 
+    // 用于创建显示搜索页面
+    public News(String url, String content, String doc_number, String content_title, int articleLength) {
+        super();
+        this.id = doc_number;
+        Title = content_title;
+        Article = content;
+        URL = url;
+        ArticleLength = articleLength;
+    }
+
+
+    // 用于索引创建
     public News(String url, String content, String doc_number, String content_title) {
         super();
         this.id = doc_number;
@@ -84,6 +89,4 @@ public class News {
     public String toString() {
         return "News [id=" + id + ", Title=" + Title + ", Article=" + Article + ", URL=" + URL + "]";
     }
-
-
 }
