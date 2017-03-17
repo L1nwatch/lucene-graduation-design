@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="jakarta-regexp-1.4">
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/jakarta-regexp/jakarta-regexp/1.4/jakarta-regexp-1.4.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

@@ -24,7 +24,8 @@ import web.src.models.News;
 
 
 public class CreateIndex {
-    static String source_data_path = "/Users/L1n/Desktop/Code/Python/PyCharm/xml转json/xml2json_result/";
+    // TODO: 这里采用的是 DEMO 数据
+    static String source_data_path = "/Users/L1n/Desktop/Code/Python/PyCharm/xml转json/demo_xml2json_result/";
 
     public static void main(String[] args) throws IOException {
         // 第一步：创建分词器
@@ -90,7 +91,7 @@ public class CreateIndex {
 
     }
 
-    // 获取news目录下所有json文件的文件名,返回文件名数组
+    // 获取 news 目录下所有 json 文件的文件名,返回文件名数组
     public static ArrayList<String> getFileName() {
         ArrayList<String> arrlist = new ArrayList<>();
         File dataPth = new File(source_data_path);
@@ -105,8 +106,7 @@ public class CreateIndex {
         return arrlist;
     }
 
-    // 把json文件解析为News对象,返回值为News对象
-
+    // 把 json 文件解析为 News 对象,返回值为 News 对象
     public static News getNews(String path) throws IOException {
         News news = new News();
         try {
