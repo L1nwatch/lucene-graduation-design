@@ -100,7 +100,7 @@
         %>
         <%
             // 总共有多少页
-            int totalPages = totalnews / perPageCount + 1;
+            int totalPages = (int) Math.ceil((double) totalnews / (double) perPageCount);
 
             // 超过 10 页, 只显示 10 页
             if (pageInfo.getPage() + 10 < totalPages) {

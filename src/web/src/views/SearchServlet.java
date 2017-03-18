@@ -2,9 +2,8 @@ package web.src.views;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.StringReader;
 import java.util.ArrayList;
-import java.util.Collections;
+//import java.util.Collections;
 import java.util.List;
 
 import javax.servlet.ServletException;
@@ -15,14 +14,12 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 //import org.apache.lucene.analysis.standard.StandardAnalyzer;  // 单字分词, 已弃用
-import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.queryparser.classic.MultiFieldQueryParser;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TopDocs;
-import org.apache.lucene.search.highlight.Fragmenter;
 import org.apache.lucene.search.highlight.Highlighter;
 import org.apache.lucene.search.highlight.QueryScorer;
 import org.apache.lucene.search.highlight.SimpleHTMLFormatter;
@@ -59,7 +56,8 @@ public class SearchServlet extends HttpServlet {
 
         // 计算查询时间
         long starTime = System.currentTimeMillis();// start time
-        String indexPathStr = request.getSession().getServletContext().getRealPath("/new_index");
+        String indexPathStr = request.getSession().getServletContext().getRealPath("/new_index");   // paoding 分词
+//        String indexPathStr = request.getSession().getServletContext().getRealPath("/full_index");   // 单字分词
         if (query != null && " ".equals(query) != true) {
 
             String pagenum = request.getParameter("p");
@@ -79,7 +77,7 @@ public class SearchServlet extends HttpServlet {
 //                Collections.sort(newsList, new SortByTime());
             }
 
-            // 修正 BUG, 这里如果超出索引值, 参考: http://stackoverflow.com/questions/12099721/how-to-use-sublist
+//             修正 BUG, 这里如果超出索引值, 参考: http://stackoverflow.com/questions/12099721/how-to-use-sublist
             List<News> pageList = newsList.subList(perPageCount * (p - 1),
                     perPageCount * p > newsList.size() ? newsList.size() : perPageCount * p);
             // 设置分页
@@ -117,10 +115,11 @@ public class SearchServlet extends HttpServlet {
 
             String[] fields = {"news_title", "news_article"};
             // 设置分词方式
-            // Analyzer analyzer = new StandardAnalyzer(Version.LUCENE_43);// 标准分词
+//             Analyzer analyzer = new StandardAnalyzer(Version.LUCENE_43);// 标准分词
             Analyzer paodingAnalyzer = new PaodingAnalyzer();   // paoding 分词
 
             MultiFieldQueryParser parser2 = new MultiFieldQueryParser(Version.LUCENE_43, fields, paodingAnalyzer);
+//            MultiFieldQueryParser parser2 = new MultiFieldQueryParser(Version.LUCENE_43, fields, analyzer);
             Query query2 = parser2.parse(key);
 
             QueryScorer scorer = new QueryScorer(query2, fields[0]);
@@ -139,13 +138,13 @@ public class SearchServlet extends HttpServlet {
                     highLighter.setTextFragmenter(new SimpleSpanFragmenter(scorer));
 
                     // 设置 title 高亮
-                    TokenStream tokenStream = TokenSources.getAnyTokenStream(searcher.getIndexReader(),
-                            topDocs.scoreDocs[i].doc, fields[0], new PaodingAnalyzer());
+                    TokenStream tokenStream = TokenSources.getAnyTokenStream(searcher.getIndexReader(),topDocs.scoreDocs[i].doc, fields[0], new PaodingAnalyzer());
+//                    TokenStream tokenStream = TokenSources.getAnyTokenStream(searcher.getIndexReader(),topDocs.scoreDocs[i].doc, fields[0], analyzer);
                     String highTitle = highLighter.getBestFragment(tokenStream, doc.get(fields[0]));
 
                     // 设置 content 高亮
-                    tokenStream = TokenSources.getAnyTokenStream(searcher.getIndexReader(), topDocs.scoreDocs[i].doc,
-                            fields[1], new PaodingAnalyzer());
+                    tokenStream = TokenSources.getAnyTokenStream(searcher.getIndexReader(), topDocs.scoreDocs[i].doc,fields[1], new PaodingAnalyzer());
+//                    tokenStream = TokenSources.getAnyTokenStream(searcher.getIndexReader(), topDocs.scoreDocs[i].doc,fields[1], analyzer);
                     String fragmentSeparator = "...";
                     int maxNumFragmentsRequired = 1;
                     String highContent = highLighter.getBestFragments(tokenStream, doc.get(fields[1]),
