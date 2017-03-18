@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?><project-modules id="moduleCoreId" project-version="1.5.0">
-    <wb-module deploy-name="UCASIR">
+    <wb-module deploy-name="lucene-graduation-design">
         <wb-resource deploy-path="/" source-path="/WebContent" tag="defaultRootSource"/>
         <wb-resource deploy-path="/WEB-INF/classes" source-path="/src"/>
         <wb-resource deploy-path="/WEB-INF/classes" source-path="/conf"/>
-        <property name="context-root" value="UCASIR"/>
-        <property name="java-output-path" value="/UCASIR/build/classes"/>
+        <property name="context-root" value="lucene-graduation-design"/>
+        <property name="java-output-path" value="/lucene-graduation-design/build/classes"/>
     </wb-module>
 </project-modules>

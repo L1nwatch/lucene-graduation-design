@@ -40,3 +40,9 @@ fork 一下别人的平台, 基于这个平台进行修改好了, 省得重复�
 ### 2017.03.17
 
 [参考](http://git.oschina.net/zhzhenqin/paoding-analysis), 把 paoding 分词跑起来了
+
+成功在 DEMO 上使用了 paoding 中文分词技术, 包括高亮、划分段等效果
+
+### 2017.03.18
+
+修正了整个工程的命名

@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 import org.apache.lucene.analysis.Analyzer;
-//import org.apache.lucene.analysis.standard.StandardAnalyzer;  // 单字分词
 import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.document.*;
 import org.apache.lucene.index.IndexWriter;
@@ -24,8 +23,8 @@ import web.src.models.News;
 import net.paoding.analysis.analyzer.PaodingAnalyzer;
 
 public class CreateIndex {
-    // TODO: 这里采用的是 DEMO 数据
-    static String source_data_path = "/Users/L1n/Desktop/Code/Python/PyCharm/xml转json/demo_xml2json_result/";
+    // TODO: 这里更改数据源
+    static String source_data_path = "/Users/L1n/Desktop/Notes/毕设/毕设实现/工程文件/xml2json_result/";
 
     public static void main(String[] args) throws IOException {
         // 第一步：创建分词器
