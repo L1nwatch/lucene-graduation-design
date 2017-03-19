@@ -4,7 +4,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 //import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -29,13 +31,16 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.Version;
 
+// 自定义
 import web.src.models.News;
 import web.src.models.Page;
+import hits.MyHITS;
 import net.paoding.analysis.analyzer.PaodingAnalyzer;
+
 
 public class SearchServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
-    private static int totalnews = 0;
+    private static int totalNews = 0;
     private static final int perPageCount = 5;
 
     public SearchServlet() {
@@ -48,6 +53,46 @@ public class SearchServlet extends HttpServlet {
 
     }
 
+    /*
+     * 获取 HITS 算法所需的基本集
+     */
+    protected ArrayList<News> getBaseSet(ArrayList<News> rawNewsList) {
+        ArrayList<News> resultList = new ArrayList<>();
+        Set<String> pagesSet = new HashSet<>();
+
+        // java 的 for each 方式
+        rawNewsList.forEach(each_new -> {
+            if (!pagesSet.contains(each_new.getURL().toLowerCase())) {
+                pagesSet.add(each_new.getURL().toLowerCase());
+                resultList.add(each_new);
+            }
+        });
+
+        this.totalNews = resultList.size();
+
+        if (resultList.size() > 200) {
+            return (ArrayList<News>) resultList.subList(0, 200);
+        } else {
+            return resultList;
+        }
+    }
+
+    /*
+     * 获取网页链接关系, 以矩阵表示
+     */
+    protected boolean[][] getLinkMatrix(ArrayList<News> pagesList) {
+        boolean[][] linkMatrix = new boolean[pagesList.size()][pagesList.size()];
+
+        // TODO: 这里还没有网页链接的数据库, 先伪造数据
+        for (int x = 0; x < pagesList.size(); ++x) {
+            for (int y = 0; y < pagesList.size(); ++y) {
+                linkMatrix[x][y] = Math.random() < 0.5; // 随机构造链接关系;
+            }
+        }
+
+        return linkMatrix;
+    }
+
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         // 表单参数处理
@@ -56,43 +101,72 @@ public class SearchServlet extends HttpServlet {
 
         // 计算查询时间
         long starTime = System.currentTimeMillis();// start time
+
+        // 存放 index 的路径
         String indexPathStr = request.getSession().getServletContext().getRealPath("/new_index");   // paoding 分词
 //        String indexPathStr = request.getSession().getServletContext().getRealPath("/full_index");   // 单字分词
-        if (query != null && " ".equals(query) != true) {
 
-            String pagenum = request.getParameter("p");
-            System.out.println("pagenum:" + pagenum);
-            int p = pagenum == null ? 1 : Integer.parseInt(pagenum);
-            System.out.println("p:" + p);
+        // 开始查询
+        if (query != null && " ".equals(query) != true) {
+            // 要显示第几页
+            String pageNum = request.getParameter("p");
+            int p = (pageNum == null) ? 1 : Integer.parseInt(pageNum);
+            System.out.println(String.format("[*] 用户要显示第 %s 页, 实际显示第 %d 页", pageNum, p));
 
             // 获取排序方式
-            String sortmethod = request.getParameter("sortnews");
-            System.out.println("排序方式:" + sortmethod);
-            ArrayList<News> newsList = getTopDoc(query, indexPathStr);
+            String sortMethod = request.getParameter("sortnews");
+            sortMethod = sortMethod == null ? "HITS" : sortMethod;
+            System.out.println(String.format("[*] 用户希望使用的排序方式是: %s", sortMethod));
 
-            Page page = new Page(p, newsList.size() / perPageCount + 1, perPageCount, newsList.size(),
-                    perPageCount * (p - 1), perPageCount * p, true, p == 1 ? false : true);
-            System.out.println(page.toString());
-            if ("byTime".equals(sortmethod)) {
-//                Collections.sort(newsList, new SortByTime());
+            // 这里得到的是原始的 N 个网页
+            ArrayList<News> rawNewsList = getTopDoc(query, indexPathStr);
+
+            // 1. 拿出网页数量(大于 200 个拿 200 个, 小于 200 个拿全部)
+            ArrayList<News> baseSet = getBaseSet(rawNewsList);
+            // 2. 获取网页链接关系
+            boolean[][] linkMatrix = getLinkMatrix(baseSet);
+
+            // TODO: 按 HITS 排序或者 PageRank 排序就放在这里
+            ArrayList<News> sortedPagesList = new ArrayList<>();
+            if ("HITS".equals(sortMethod)) {
+                // Collections.sort(rawNewsList, new SortByTime());
+                // TODO: HITS 排序插入到这里
+                MyHITS hits = new MyHITS(baseSet);
+                sortedPagesList = hits.hitsSort(linkMatrix);
+            } else if ("PageRank".equals(sortMethod)) {
+                // TODO: PageRank 排序插入到这里
+            } else {
+                throw new ServletException(String.format("[-] 用户选择了不支持的排序算法: %s", sortMethod));
             }
 
-//             修正 BUG, 这里如果超出索引值, 参考: http://stackoverflow.com/questions/12099721/how-to-use-sublist
-            List<News> pageList = newsList.subList(perPageCount * (p - 1),
-                    perPageCount * p > newsList.size() ? newsList.size() : perPageCount * p);
+            // 获取要展示到前端的页面
+            Page page = new Page(p, sortedPagesList.size() / perPageCount + 1, perPageCount, sortedPagesList.size(),
+                    perPageCount * (p - 1), perPageCount * p, true, p == 1 ? false : true);
+            System.out.println(page.toString());
+            // 修正 BUG, 这里如果超出索引值, 参考: http://stackoverflow.com/questions/12099721/how-to-use-sublist
+            List<News> pageList = sortedPagesList.subList(perPageCount * (p - 1),
+                    perPageCount * p > sortedPagesList.size() ? sortedPagesList.size() : perPageCount * p);
+
             // 设置分页
-            System.out.println("servlet newslist length:" + newsList.size());
+            System.out.println(String.format("[*] 要展示到前端的 sortedPagesList 长度为: %s", sortedPagesList.size()));
+
+            // jsp 相关设定
             request.setAttribute("query", query);
             request.setAttribute("newslist", pageList);
             request.setAttribute("queryback", query);
-            request.setAttribute("totaln", totalnews);
+            request.setAttribute("totaln", totalNews);
             request.setAttribute("perPageCount", perPageCount);
+
+            // 计算搜索耗时
             long endTime = System.currentTimeMillis();// end time
             long Time = endTime - starTime;
             request.setAttribute("time", (double) Time / 1000);
+
+            //
             request.setAttribute("page", page);
             request.getRequestDispatcher("result.jsp").forward(request, response);
         } else {
+            // 重定向到错误页面
             request.getRequestDispatcher("error.jsp").forward(request, response);
         }
 
@@ -126,11 +200,11 @@ public class SearchServlet extends HttpServlet {
             SimpleHTMLFormatter formatter = new SimpleHTMLFormatter("<span style=\"color:red;\">", "</span>");
             Highlighter highLighter = new Highlighter(formatter, scorer);
 
-            // 返回前10条
+            // 返回前 500 条?
             TopDocs topDocs = searcher.search(query2, 500);
             if (topDocs != null) {
-                totalnews = topDocs.totalHits;
-                System.out.println("符合条件第文档总数：" + totalnews);
+                totalNews = topDocs.totalHits;
+                System.out.println("[*] 符合条件第文档总数：" + totalNews);
                 for (int i = 0; i < topDocs.scoreDocs.length; i++) {
                     Document doc = searcher.doc(topDocs.scoreDocs[i].doc);
 
@@ -138,12 +212,12 @@ public class SearchServlet extends HttpServlet {
                     highLighter.setTextFragmenter(new SimpleSpanFragmenter(scorer));
 
                     // 设置 title 高亮
-                    TokenStream tokenStream = TokenSources.getAnyTokenStream(searcher.getIndexReader(),topDocs.scoreDocs[i].doc, fields[0], new PaodingAnalyzer());
+                    TokenStream tokenStream = TokenSources.getAnyTokenStream(searcher.getIndexReader(), topDocs.scoreDocs[i].doc, fields[0], new PaodingAnalyzer());
 //                    TokenStream tokenStream = TokenSources.getAnyTokenStream(searcher.getIndexReader(),topDocs.scoreDocs[i].doc, fields[0], analyzer);
                     String highTitle = highLighter.getBestFragment(tokenStream, doc.get(fields[0]));
 
                     // 设置 content 高亮
-                    tokenStream = TokenSources.getAnyTokenStream(searcher.getIndexReader(), topDocs.scoreDocs[i].doc,fields[1], new PaodingAnalyzer());
+                    tokenStream = TokenSources.getAnyTokenStream(searcher.getIndexReader(), topDocs.scoreDocs[i].doc, fields[1], new PaodingAnalyzer());
 //                    tokenStream = TokenSources.getAnyTokenStream(searcher.getIndexReader(), topDocs.scoreDocs[i].doc,fields[1], analyzer);
                     String fragmentSeparator = "...";
                     int maxNumFragmentsRequired = 1;
@@ -164,6 +238,7 @@ public class SearchServlet extends HttpServlet {
 
                 // TODO: HITS 算法插入位置
                 newsList = newsList;
+                System.out.println(String.format("[*] 计算得到的 newsList 长度为 %s", newsList.size()));
             }
 
         } catch (Exception e) {

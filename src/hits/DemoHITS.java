@@ -1,4 +1,4 @@
-package hits_demo;
+package hits;
 
 
 import java.io.BufferedReader;
@@ -11,7 +11,7 @@ import java.util.ArrayList;
  * Created by L1n on 17/3/14.
  * 参考: http://blog.csdn.net/androidlushangderen/article/details/43311943#
  */
-public class HelloHITS {
+public class DemoHITS {
     //输入数据文件地址
     private String filePath;
     //网页个数
@@ -27,12 +27,12 @@ public class HelloHITS {
 
     public static void main(String[] args) throws Exception {
         String file_path = "/Users/L1n/Desktop/Code/Java/lucene-graduation-design/src/hits_demo/test_file.txt";
-        HelloHITS hello_hits = new HelloHITS(file_path);
+        DemoHITS hello_hits = new DemoHITS(file_path);
         hello_hits.printResultPage();
     }
 
 
-    public HelloHITS(String filePath) throws Exception {
+    public DemoHITS(String filePath) throws Exception {
         this.filePath = filePath;
         readDataFile();
     }
@@ -154,5 +154,4 @@ public class HelloHITS {
         }
         System.out.println("权威值最高的网页为：网页" + pageClass.get(maxAuthorityIndex));
     }
-
 }

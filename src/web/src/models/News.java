@@ -8,6 +8,15 @@ public class News {
     private String Summary;// 用于搜索结果的显示
     private Integer ArticleLength;// 原来正文内容的长度
     private String URL;// 新闻 url
+    private double authority;   // 权威值
+
+    public double getAuthority() {
+        return authority;
+    }
+
+    public void setAuthority(double authority) {
+        this.authority = authority;
+    }
 
     public Integer getArticleLength() {
         return ArticleLength;
