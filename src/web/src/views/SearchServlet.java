@@ -3,7 +3,7 @@ package web.src.views;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-//import java.util.Collections;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -36,6 +36,7 @@ import web.src.models.News;
 import web.src.models.Page;
 import hits.MyHITS;
 import net.paoding.analysis.analyzer.PaodingAnalyzer;
+import sqlite.interactive.SQLInteractive;
 
 
 public class SearchServlet extends HttpServlet {
@@ -51,6 +52,96 @@ public class SearchServlet extends HttpServlet {
             throws ServletException, IOException {
         doPost(request, response);
 
+    }
+
+    /*
+     * 通过访问数据库获取指定页面指向的所有页面
+     */
+    protected ArrayList<News> getOutPages(String pageId) {
+        ArrayList<News> resultList = new ArrayList<>();
+        SQLInteractive dbOperator = new SQLInteractive();
+        // 查询该 id 是否存在于表 linkindoc 中
+        if (dbOperator.checkPageIdInLinkInDoc(pageId)) {
+            // 存在则把该页面指向的所有 ID 拿出来
+            ArrayList<String> allIDList = dbOperator.getAllOutFromLinkInDoc(pageId);
+
+            // 然后到 domainid2url 这个表中把所有链接拿出来
+            allIDList.forEach(eachId -> {
+                ArrayList<String> allURLList = dbOperator.getURLFromDomainID2URL(eachId);
+
+                allURLList.forEach(each_url -> {
+                    // 创建一个 news, 添加进 resultList 中
+                    News newPage = new News(each_url, String.format("这是一个由搜索结果 %s 指向的页面", pageId),
+                            "null", "某个被搜索结果指向的页面");
+                    resultList.add(newPage);
+                });
+            });
+        }
+
+        return resultList;
+    }
+
+    /*
+     * 通过访问数据库获取所有指向给定页面的页面
+     */
+    protected ArrayList<News> getInPages(String pageId) {
+        ArrayList<News> resultList = new ArrayList<>();
+        SQLInteractive dbOperator = new SQLInteractive();
+        // 查询该 id 是否存在于表 linkindoc 中
+        if (dbOperator.checkPageIdInLinkInDoc(pageId)) {
+            // 存在则把所有指向该页面的 ID 拿出来
+            ArrayList<String> allIDList = dbOperator.getAllInFromLinkInDoc(pageId);
+
+            // 然后到 domainid2url 这个表中把所有链接拿出来
+            allIDList.forEach(eachId -> {
+                ArrayList<String> allURLList = dbOperator.getURLFromDomainID2URL(eachId);
+
+                allURLList.forEach(each_url -> {
+                    // 创建一个 news, 添加进 resultList 中
+                    News newPage = new News(each_url, String.format("这是一个指向搜索结果 %s 指向的页面", pageId),
+                            "null", "某个指向搜索结果的页面");
+                    resultList.add(newPage);
+                });
+            });
+        }
+
+        return resultList;
+    }
+
+    /*
+     * 通过链接关系库扩展根集变为基本集
+     */
+    protected ArrayList<News> expandSet(ArrayList<News> rawNewsList, Set<String> pagesSet) {
+        ArrayList<News> resultList = new ArrayList<>(rawNewsList);
+        Set<String> expandPagesSet = new HashSet<>(pagesSet);
+
+        // 遍历每一个页面
+        rawNewsList.forEach(each_new -> {
+            // 把该页面指向的所有页面都加入进来
+            ArrayList<News> outPages = getOutPages(each_new.getId().split("-")[1]);
+            outPages.forEach(each_page -> {
+                if (!expandPagesSet.contains(each_page.getURL().toLowerCase())) {
+                    expandPagesSet.add(each_page.getURL().toLowerCase());
+                    resultList.add(each_page);
+                }
+            });
+
+            // 把所有指向该页面的页面中摘选至多 d 个加进来, 文献给出的 d = 50
+            ArrayList<News> inPages = getInPages(each_new.getId().split("-")[1]);
+            int limit = 50; // 至多加进 50 个页面
+            int counts = 0;
+            for (News each_page : inPages) {
+                if (counts < limit && !expandPagesSet.contains(each_page.getURL().toLowerCase())) {
+                    expandPagesSet.add(each_page.getURL().toLowerCase());
+                    resultList.add(each_page);
+                    counts += 1;
+                } else if (counts >= limit) {
+                    break;
+                }
+            }
+        });
+
+        return resultList;
     }
 
     /*
@@ -71,9 +162,9 @@ public class SearchServlet extends HttpServlet {
         this.totalNews = resultList.size();
 
         if (resultList.size() > 200) {
-            return (ArrayList<News>) resultList.subList(0, 200);
+            return expandSet((ArrayList<News>) resultList.subList(0, 200), pagesSet);
         } else {
-            return resultList;
+            return expandSet(resultList, pagesSet);
         }
     }
 
