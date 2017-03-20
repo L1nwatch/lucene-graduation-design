@@ -126,11 +126,10 @@ public class SearchServlet extends HttpServlet {
             // 2. 获取网页链接关系
             boolean[][] linkMatrix = getLinkMatrix(baseSet);
 
-            // TODO: 按 HITS 排序或者 PageRank 排序就放在这里
+            // 3. 按 HITS 排序或者 PageRank 排序
             ArrayList<News> sortedPagesList = new ArrayList<>();
             if ("HITS".equals(sortMethod)) {
-                // Collections.sort(rawNewsList, new SortByTime());
-                // TODO: HITS 排序插入到这里
+                // HITS 排序插入到这里
                 MyHITS hits = new MyHITS(baseSet);
                 sortedPagesList = hits.hitsSort(linkMatrix);
             } else if ("PageRank".equals(sortMethod)) {
