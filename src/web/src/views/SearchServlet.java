@@ -69,9 +69,9 @@ public class SearchServlet extends HttpServlet {
                 ArrayList<String> allURLList = dbOperator.getURLFromDomainID2URL(eachId);
 
                 allURLList.forEach(each_url -> {
+                    String content = String.format("这是一个由搜索结果 %s 指向的页面", pageId);
                     // 创建一个 news, 添加进 resultList 中
-                    News newPage = new News(each_url, String.format("这是一个由搜索结果 %s 指向的页面", pageId),
-                            "null", "某个被搜索结果指向的页面");
+                    News newPage = new News(each_url, content, "null", "某个被搜索结果指向的页面", content.length());
                     resultList.add(newPage);
                 });
             });
@@ -96,8 +96,8 @@ public class SearchServlet extends HttpServlet {
 
                 allURLList.forEach(each_url -> {
                     // 创建一个 news, 添加进 resultList 中
-                    News newPage = new News(each_url, String.format("这是一个指向搜索结果 %s 指向的页面", pageId),
-                            "null", "某个指向搜索结果的页面");
+                    String content = String.format("这是一个指向搜索结果 %s 指向的页面", pageId);
+                    News newPage = new News(each_url, content, "null", "某个指向搜索结果的页面", content.length());
                     resultList.add(newPage);
                 });
             });
@@ -127,6 +127,7 @@ public class SearchServlet extends HttpServlet {
             });
 
             // 把所有指向该页面的页面中摘选至多 d 个加进来, 文献给出的 d = 50
+            // TODO: d 的值不合适
             ArrayList<News> inPages = getInPages(each_new.getId().split("-")[1], dbOperator);
             int limit = 50; // 至多加进 50 个页面
             int counts = 0;
@@ -159,8 +160,6 @@ public class SearchServlet extends HttpServlet {
                 resultList.add(each_new);
             }
         });
-
-        this.totalNews = resultList.size();
 
         if (resultList.size() > 200) {
             return expandSet((ArrayList<News>) resultList.subList(0, 200), pagesSet);
@@ -215,6 +214,7 @@ public class SearchServlet extends HttpServlet {
 
             // 1. 拿出网页数量(大于 200 个拿 200 个, 小于 200 个拿全部)
             ArrayList<News> baseSet = getBaseSet(rawNewsList);
+            totalNews = baseSet.size();
             // 2. 获取网页链接关系
             boolean[][] linkMatrix = getLinkMatrix(baseSet);
 

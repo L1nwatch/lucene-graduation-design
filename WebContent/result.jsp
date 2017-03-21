@@ -68,7 +68,7 @@
         <p>
             <%=news.getSummary()%>
             <br/>
-            <a href=""><%=news.getURL()%>
+            <a href="<%=news.getURL()%>"><%=news.getURL()%>
             </a>
         </p>
     </div>

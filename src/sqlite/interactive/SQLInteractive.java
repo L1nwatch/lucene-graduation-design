@@ -128,7 +128,7 @@ public class SQLInteractive {
 
         try {
             Statement stmt = dbCursor.createStatement();
-            ResultSet rs = stmt.executeQuery(String.format("select page_url from domainid2url where page_id='%s';", domainId));
+            ResultSet rs = stmt.executeQuery(String.format("select page_url from domainid2urlindoc where page_id='%s';", domainId));
             while (rs.next()) {
                 resultList.add(rs.getString("page_url"));
             }
