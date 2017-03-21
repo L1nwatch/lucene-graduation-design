@@ -173,13 +173,34 @@ public class SearchServlet extends HttpServlet {
      */
     protected boolean[][] getLinkMatrix(ArrayList<News> pagesList) {
         boolean[][] linkMatrix = new boolean[pagesList.size()][pagesList.size()];
+        SQLInteractive dbOperator = new SQLInteractive();
 
-        // TODO: 这里还没有网页链接的数据库, 先伪造数据
+        dbOperator.startConnection();
+
         for (int x = 0; x < pagesList.size(); ++x) {
-            for (int y = 0; y < pagesList.size(); ++y) {
-                linkMatrix[x][y] = Math.random() < 0.5; // 随机构造链接关系;
+            for (int y = x; y < pagesList.size(); ++y) {
+                int checkResult = dbOperator.checkPagesLinkRelationShip(pagesList.get(x), pagesList.get(y));
+                if (checkResult == 1) {
+                    // 表示 pagesList[x] 指向了 pagesList[y]
+                    linkMatrix[x][y] = true;
+                    linkMatrix[y][x] = false;
+                } else if (checkResult == 2) {
+                    // 表示 pagesList[y] 指向了 pagesList[x]
+                    linkMatrix[x][y] = false;
+                    linkMatrix[y][x] = true;
+                } else if (checkResult == 3) {
+                    // 表示 pagesList[x] 与 pagesList[y] 互相指向
+                    linkMatrix[x][y] = true;
+                    linkMatrix[y][x] = true;
+                } else {
+                    // 表示两者无链接关系
+                    linkMatrix[x][y] = false;
+                    linkMatrix[y][x] = false;
+                }
             }
         }
+
+        dbOperator.closeConnection();
 
         return linkMatrix;
     }

@@ -66,8 +66,9 @@ public class MyHITS {
             for (int i = 0; i < pageNum; i++) {
                 for (int j = 0; j < pageNum; j++) {
                     if (linkMatrix[i][j]) {
-                        temp_authority[i] += resultAuthority[j];
-                        temp_hub[j] += resultHub[i];
+                        // i 指向了 j
+                        temp_hub[i] += resultAuthority[j];
+                        temp_authority[j] += resultHub[i];
                     }
                 }
             }

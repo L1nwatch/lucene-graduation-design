@@ -7,6 +7,8 @@ import java.sql.DriverManager;
 import java.sql.Statement;
 import java.sql.ResultSet;
 
+import web.src.models.News;
+
 /**
  * Created by L1n on 17/3/20.
  * 负责与数据库交互的相关操作
@@ -14,6 +16,49 @@ import java.sql.ResultSet;
 public class SQLInteractive {
     private Connection dbCursor = null;    // 连接数据库用的
 
+    public int checkPagesLinkRelationShip(News p, News q) {
+        // TODO: DOMAIN ID 是不是可以优化一下, 不用每次都自己计算
+        int checkResult = 0;
+
+        // TODO: 这里的 getId 不对
+        try {
+            Statement stmt = dbCursor.createStatement();
+
+            // 查询一下 p 是否指向 q, 有两种情况
+            // domain_id = p, out_id = q
+            // domain_id = q, in_id = p
+            ResultSet rs = stmt.executeQuery(String.format("SELECT * FROM linkindoc WHERE domain_id='%s' and out_id='%s';", p.getId(), q.getId()));
+            if (rs.next()) {
+                checkResult = checkResult ^ 1;
+            }
+            rs = stmt.executeQuery(String.format("SELECT * FROM linkindoc WHERE domain_id='%s' and in_id='%s';", q.getId(), p.getId()));
+            if (rs.next()) {
+                checkResult = checkResult ^ 1;
+            }
+
+            // 查询一下 q 是否指向 p, 有两种情况
+            // domain_id = q, out_id = p
+            // domain_id = p, in_id = q
+            rs = stmt.executeQuery(String.format("SELECT * FROM linkindoc WHERE domain_id='%s' and out_id='%s';", q.getId(), p.getId()));
+            if (rs.next()) {
+                checkResult = checkResult ^ 2;
+            }
+            rs = stmt.executeQuery(String.format("SELECT * FROM linkindoc WHERE domain_id='%s' and in_id='%s';", p.getId(), q.getId()));
+            if (rs.next()) {
+                checkResult = checkResult ^ 2;
+            }
+
+            rs.close();
+            stmt.close();
+
+        } catch (Exception e) {
+            System.out.println(String.format("[*] 检查过程中发生了错误, %s:%s", e.getClass().getName(), e.getMessage()));
+        } finally {
+            return checkResult;
+        }
+
+
+    }
 
     /*
      * 关闭数据库连接
@@ -178,6 +223,26 @@ public class SQLInteractive {
         allURLList.forEach(each_url -> {
             System.out.println(String.format("[*] 15a13306c0bb3300 的 URL 是 %s, 正确答案是 %s 和 %s", each_url, right_url, right_url2));
         });
+
+        News a = new News("url", "content", "1df13306c0bb3300", "title");
+        News b = new News("url", "content", "25713306c0bb3300", "title");
+        int checkResult = test.checkPagesLinkRelationShip(a, b);
+        System.out.println(String.format("[*] 1df13306c0bb3300 与 25713306c0bb3300 的链接关系为 %d", checkResult));
+
+        a = new News("url", "content", "aca5d9a362314a50", "title");
+        b = new News("url", "content", "60f5d9a362314a50", "title");
+        checkResult = test.checkPagesLinkRelationShip(a, b);
+        System.out.println(String.format("[*] aca5d9a362314a50 与 60f5d9a362314a50 的链接关系为 %d", checkResult));
+
+        a = new News("url", "content", "15a13306c0bb3300", "title");
+        b = new News("url", "content", "15a13306c0bb3300", "title");
+        checkResult = test.checkPagesLinkRelationShip(a, b);
+        System.out.println(String.format("[*] 15a13306c0bb3300 与 15a13306c0bb3300 的链接关系为 %d", checkResult));
+
+        a = new News("url", "content", "b40d5a05c5677d40", "title");
+        b = new News("url", "content", "aca5d9a362314a50", "title");
+        checkResult = test.checkPagesLinkRelationShip(a, b);
+        System.out.println(String.format("[*] b40d5a05c5677d40 与 aca5d9a362314a50 的链接关系为 %d", checkResult));
 
         test.closeConnection();
 
