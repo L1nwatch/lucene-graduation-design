@@ -57,9 +57,8 @@ public class SearchServlet extends HttpServlet {
     /*
      * 通过访问数据库获取指定页面指向的所有页面
      */
-    protected ArrayList<News> getOutPages(String pageId) {
+    protected ArrayList<News> getOutPages(String pageId, SQLInteractive dbOperator) {
         ArrayList<News> resultList = new ArrayList<>();
-        SQLInteractive dbOperator = new SQLInteractive();
         // 查询该 id 是否存在于表 linkindoc 中
         if (dbOperator.checkPageIdInLinkInDoc(pageId)) {
             // 存在则把该页面指向的所有 ID 拿出来
@@ -84,9 +83,8 @@ public class SearchServlet extends HttpServlet {
     /*
      * 通过访问数据库获取所有指向给定页面的页面
      */
-    protected ArrayList<News> getInPages(String pageId) {
+    protected ArrayList<News> getInPages(String pageId, SQLInteractive dbOperator) {
         ArrayList<News> resultList = new ArrayList<>();
-        SQLInteractive dbOperator = new SQLInteractive();
         // 查询该 id 是否存在于表 linkindoc 中
         if (dbOperator.checkPageIdInLinkInDoc(pageId)) {
             // 存在则把所有指向该页面的 ID 拿出来
@@ -114,11 +112,13 @@ public class SearchServlet extends HttpServlet {
     protected ArrayList<News> expandSet(ArrayList<News> rawNewsList, Set<String> pagesSet) {
         ArrayList<News> resultList = new ArrayList<>(rawNewsList);
         Set<String> expandPagesSet = new HashSet<>(pagesSet);
+        SQLInteractive dbOperator = new SQLInteractive();
+        dbOperator.startConnection();
 
         // 遍历每一个页面
         rawNewsList.forEach(each_new -> {
             // 把该页面指向的所有页面都加入进来
-            ArrayList<News> outPages = getOutPages(each_new.getId().split("-")[1]);
+            ArrayList<News> outPages = getOutPages(each_new.getId().split("-")[1], dbOperator);
             outPages.forEach(each_page -> {
                 if (!expandPagesSet.contains(each_page.getURL().toLowerCase())) {
                     expandPagesSet.add(each_page.getURL().toLowerCase());
@@ -127,7 +127,7 @@ public class SearchServlet extends HttpServlet {
             });
 
             // 把所有指向该页面的页面中摘选至多 d 个加进来, 文献给出的 d = 50
-            ArrayList<News> inPages = getInPages(each_new.getId().split("-")[1]);
+            ArrayList<News> inPages = getInPages(each_new.getId().split("-")[1], dbOperator);
             int limit = 50; // 至多加进 50 个页面
             int counts = 0;
             for (News each_page : inPages) {
@@ -141,6 +141,7 @@ public class SearchServlet extends HttpServlet {
             }
         });
 
+        dbOperator.closeConnection();
         return resultList;
     }
 

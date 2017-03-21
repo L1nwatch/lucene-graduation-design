@@ -12,6 +12,31 @@ import java.sql.ResultSet;
  * 负责与数据库交互的相关操作
  */
 public class SQLInteractive {
+    private Connection dbCursor = null;    // 连接数据库用的
+
+
+    /*
+     * 关闭数据库连接
+     */
+    public void closeConnection() {
+        try {
+            dbCursor.close();
+        } catch (Exception e) {
+            System.out.println(String.format("[*] 数据库关闭失败, %s:%s", e.getClass().getName(), e.getMessage()));
+        }
+    }
+
+    /*
+     * 开始进行数据库操作
+     */
+    public void startConnection() {
+        try {
+            dbCursor = connectDB();
+            dbCursor.setAutoCommit(false);
+        } catch (Exception e) {
+            System.out.println(String.format("[*] 数据库连接失败, %s:%s", e.getClass().getName(), e.getMessage()));
+        }
+    }
 
     /*
      * 检查某一 pageId 是否存在于 LinkInDoc 之中
@@ -19,9 +44,6 @@ public class SQLInteractive {
     public boolean checkPageIdInLinkInDoc(String pageId) {
         boolean result;
         try {
-            Connection dbCursor = connectDB();
-            dbCursor.setAutoCommit(false);
-
             Statement stmt = dbCursor.createStatement();
             ResultSet rs = stmt.executeQuery(String.format("SELECT * FROM linkindoc where domain_id='%s';", pageId));
             if (rs.next()) {
@@ -32,7 +54,7 @@ public class SQLInteractive {
 
             rs.close();
             stmt.close();
-            dbCursor.close();
+
             return result;
 
         } catch (Exception e) {
@@ -48,9 +70,6 @@ public class SQLInteractive {
         ArrayList<String> resultList = new ArrayList<>();
 
         try {
-            Connection dbCursor = connectDB();
-            dbCursor.setAutoCommit(false);
-
             Statement stmt = dbCursor.createStatement();
             ResultSet rs = stmt.executeQuery(String.format("SELECT distinct domain_id FROM linkindoc where out_id='%s';", pageId));
             while (rs.next()) {
@@ -66,7 +85,6 @@ public class SQLInteractive {
 
             rs.close();
             stmt.close();
-            dbCursor.close();
 
         } catch (Exception e) {
             System.out.println(String.format("[*] 检查过程中发生了错误, %s:%s", e.getClass().getName(), e.getMessage()));
@@ -82,9 +100,6 @@ public class SQLInteractive {
         ArrayList<String> resultList = new ArrayList<>();
 
         try {
-            Connection dbCursor = connectDB();
-            dbCursor.setAutoCommit(false);
-
             Statement stmt = dbCursor.createStatement();
             ResultSet rs = stmt.executeQuery(String.format("SELECT distinct domain_id FROM linkindoc where in_id='%s';", pageId));
             while (rs.next()) {
@@ -100,7 +115,6 @@ public class SQLInteractive {
 
             rs.close();
             stmt.close();
-            dbCursor.close();
 
         } catch (Exception e) {
             System.out.println(String.format("[*] 检查过程中发生了错误, %s:%s", e.getClass().getName(), e.getMessage()));
@@ -113,9 +127,6 @@ public class SQLInteractive {
         ArrayList<String> resultList = new ArrayList<>();
 
         try {
-            Connection dbCursor = connectDB();
-            dbCursor.setAutoCommit(false);
-
             Statement stmt = dbCursor.createStatement();
             ResultSet rs = stmt.executeQuery(String.format("select page_url from domainid2url where page_id='%s';", domainId));
             while (rs.next()) {
@@ -124,7 +135,6 @@ public class SQLInteractive {
 
             rs.close();
             stmt.close();
-            dbCursor.close();
 
         } catch (Exception e) {
             System.out.println(String.format("[*] 检查过程中发生了错误, %s:%s", e.getClass().getName(), e.getMessage()));
@@ -138,6 +148,8 @@ public class SQLInteractive {
      */
     public static void main(String args[]) throws Exception {
         SQLInteractive test = new SQLInteractive();
+        test.startConnection();
+
         if (test.checkPageIdInLinkInDoc("69713306c0bb3300")) {
             System.out.println("[*] 69713306c0bb3300 存在于 linkindoc 表中");
         }
@@ -166,6 +178,8 @@ public class SQLInteractive {
         allURLList.forEach(each_url -> {
             System.out.println(String.format("[*] 15a13306c0bb3300 的 URL 是 %s, 正确答案是 %s 和 %s", each_url, right_url, right_url2));
         });
+
+        test.closeConnection();
 
     }
 

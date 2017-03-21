@@ -38,8 +38,8 @@
                 <input id="query" type="text" name="query" value=" ">
                 <input type="submit" value="搜索"><br/>
                 <div class="sortPick">
-                    按相关度排序 <input type="radio" value="byreRelevancy" name="sortnews" checked="checked">
-                    按时间排序 <input type="radio" value="byTime" name="sortnews">
+                    HITS 排序 <input type="radio" value="HITS" name="sortnews" checked="checked">
+                    PageRank 排序 <input type="radio" value="PageRank" name="sortnews">
                 </div>
             </form>
 
