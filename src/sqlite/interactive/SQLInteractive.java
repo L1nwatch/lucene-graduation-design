@@ -17,21 +17,21 @@ public class SQLInteractive {
     private Connection dbCursor = null;    // 连接数据库用的
 
     public int checkPagesLinkRelationShip(News p, News q) {
-        // TODO: DOMAIN ID 是不是可以优化一下, 不用每次都自己计算
         int checkResult = 0;
+        String pId = p.getDomainID();
+        String qId = q.getDomainID();
 
-        // TODO: 这里的 getId 不对
         try {
             Statement stmt = dbCursor.createStatement();
 
             // 查询一下 p 是否指向 q, 有两种情况
             // domain_id = p, out_id = q
             // domain_id = q, in_id = p
-            ResultSet rs = stmt.executeQuery(String.format("SELECT * FROM linkindoc WHERE domain_id='%s' and out_id='%s';", p.getId(), q.getId()));
+            ResultSet rs = stmt.executeQuery(String.format("SELECT * FROM linkindoc WHERE domain_id='%s' and out_id='%s';", pId, qId));
             if (rs.next()) {
                 checkResult = checkResult ^ 1;
             }
-            rs = stmt.executeQuery(String.format("SELECT * FROM linkindoc WHERE domain_id='%s' and in_id='%s';", q.getId(), p.getId()));
+            rs = stmt.executeQuery(String.format("SELECT * FROM linkindoc WHERE domain_id='%s' and in_id='%s';", qId, pId));
             if (rs.next()) {
                 checkResult = checkResult ^ 1;
             }
@@ -39,11 +39,11 @@ public class SQLInteractive {
             // 查询一下 q 是否指向 p, 有两种情况
             // domain_id = q, out_id = p
             // domain_id = p, in_id = q
-            rs = stmt.executeQuery(String.format("SELECT * FROM linkindoc WHERE domain_id='%s' and out_id='%s';", q.getId(), p.getId()));
+            rs = stmt.executeQuery(String.format("SELECT * FROM linkindoc WHERE domain_id='%s' and out_id='%s';", qId, pId));
             if (rs.next()) {
                 checkResult = checkResult ^ 2;
             }
-            rs = stmt.executeQuery(String.format("SELECT * FROM linkindoc WHERE domain_id='%s' and in_id='%s';", p.getId(), q.getId()));
+            rs = stmt.executeQuery(String.format("SELECT * FROM linkindoc WHERE domain_id='%s' and in_id='%s';", pId, qId));
             if (rs.next()) {
                 checkResult = checkResult ^ 2;
             }

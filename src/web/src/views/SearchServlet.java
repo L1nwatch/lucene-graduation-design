@@ -71,7 +71,8 @@ public class SearchServlet extends HttpServlet {
                 allURLList.forEach(each_url -> {
                     String content = String.format("这是一个由搜索结果 %s 指向的页面", pageId);
                     // 创建一个 news, 添加进 resultList 中
-                    News newPage = new News(each_url, content, "null", "某个被搜索结果指向的页面", content.length());
+                    News newPage = new News(each_url, content,
+                            String.format("xx-%s", eachId), "某个被搜索结果指向的页面", content.length());
                     resultList.add(newPage);
                 });
             });
@@ -96,8 +97,9 @@ public class SearchServlet extends HttpServlet {
 
                 allURLList.forEach(each_url -> {
                     // 创建一个 news, 添加进 resultList 中
-                    String content = String.format("这是一个指向搜索结果 %s 指向的页面", pageId);
-                    News newPage = new News(each_url, content, "null", "某个指向搜索结果的页面", content.length());
+                    String content = String.format("这是一个指向搜索结果 %s 的页面", pageId);
+                    News newPage = new News(each_url, content,
+                            String.format("xx-%s", eachId), "某个指向搜索结果的页面", content.length());
                     resultList.add(newPage);
                 });
             });
@@ -118,7 +120,7 @@ public class SearchServlet extends HttpServlet {
         // 遍历每一个页面
         rawNewsList.forEach(each_new -> {
             // 把该页面指向的所有页面都加入进来
-            ArrayList<News> outPages = getOutPages(each_new.getId().split("-")[1], dbOperator);
+            ArrayList<News> outPages = getOutPages(each_new.getDomainID(), dbOperator);
             outPages.forEach(each_page -> {
                 if (!expandPagesSet.contains(each_page.getURL().toLowerCase())) {
                     expandPagesSet.add(each_page.getURL().toLowerCase());
@@ -128,7 +130,7 @@ public class SearchServlet extends HttpServlet {
 
             // 把所有指向该页面的页面中摘选至多 d 个加进来, 文献给出的 d = 50
             // TODO: d 的值不合适
-            ArrayList<News> inPages = getInPages(each_new.getId().split("-")[1], dbOperator);
+            ArrayList<News> inPages = getInPages(each_new.getDomainID(), dbOperator);
             int limit = 50; // 至多加进 50 个页面
             int counts = 0;
             for (News each_page : inPages) {

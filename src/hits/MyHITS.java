@@ -35,12 +35,12 @@ public class MyHITS {
         }
 
         // 开始排序
-        Collections.sort(this.pagesList, new Comparator<News>() {
+        Collections.sort(this.pagesList, Collections.reverseOrder(new Comparator<News>() {
             @Override
             public int compare(News o1, News o2) {
-                return o1.getId().compareTo(o2.getId());
+                return Double.compare(o1.getAuthority(), o2.getAuthority());
             }
-        });
+        }));
         return this.pagesList;
     }
 
