@@ -9,7 +9,8 @@ public class News {
     private String DomainID = null;    // 域名 ID, 方便 HITS 算法实现以及数据库查找等
     private Integer ArticleLength;// 原来正文内容的长度
     private String URL;// 新闻 url
-    private double authority;   // 权威值
+    private double authority;   // 权威值, HITS 算法需要
+    private double pageRank;    // pageRank 值, pageRank 算法需要
 
     public String getDomainID() {
         if (DomainID == null) {
@@ -18,6 +19,15 @@ public class News {
 
         return DomainID;
     }
+
+    public double getPageRank() {
+        return pageRank;
+    }
+
+    public void setPageRank(double pageRank) {
+        this.pageRank = pageRank;
+    }
+
 
     public void setDomainID(String domainID) {
         DomainID = domainID;

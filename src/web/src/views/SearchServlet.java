@@ -35,6 +35,7 @@ import org.apache.lucene.util.Version;
 import web.src.models.News;
 import web.src.models.Page;
 import hits.MyHITS;
+import pagerank.MyPageRank;
 import net.paoding.analysis.analyzer.PaodingAnalyzer;
 import sqlite.interactive.SQLInteractive;
 
@@ -248,7 +249,9 @@ public class SearchServlet extends HttpServlet {
                 MyHITS hits = new MyHITS(baseSet);
                 sortedPagesList = hits.hitsSort(linkMatrix);
             } else if ("PageRank".equals(sortMethod)) {
-                // TODO: PageRank 排序插入到这里
+                // PageRank 排序插入到这里
+                MyPageRank pageRank = new MyPageRank(baseSet);
+                sortedPagesList = pageRank.pageRankSort(pageRank.doubleMatrix(linkMatrix));
             } else {
                 throw new ServletException(String.format("[-] 用户选择了不支持的排序算法: %s", sortMethod));
             }
@@ -350,8 +353,6 @@ public class SearchServlet extends HttpServlet {
 
                 }
 
-                // TODO: HITS 算法插入位置
-                newsList = newsList;
                 System.out.println(String.format("[*] 计算得到的 newsList 长度为 %s", newsList.size()));
             }
 

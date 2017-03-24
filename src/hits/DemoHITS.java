@@ -26,7 +26,7 @@ public class DemoHITS {
     private ArrayList<String> pageClass;
 
     public static void main(String[] args) throws Exception {
-        String file_path = "/Users/L1n/Desktop/Code/Java/lucene-graduation-design/src/hits_demo/test_file.txt";
+        String file_path = "/Users/L1n/Desktop/Code/Java/lucene-graduation-design/src/hits/test_file.txt";
         DemoHITS hello_hits = new DemoHITS(file_path);
         hello_hits.printResultPage();
     }
