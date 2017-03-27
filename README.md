@@ -80,3 +80,7 @@ fork 一下别人的平台, 基于这个平台进行修改好了, 省得重复�
 ### 2017.03.27
 
 新建了个 Branch, 用于进行评测工作的相关代码实现
+
+实现了同时显示 PageRank 排序以及 HITS 排序, 分栏显示的, 具体效果如下图:
+
+![分栏显示排序结果](https://github.com/L1nwatch/lucene-graduation-design/blob/analysis-work/2017-03-27%E6%90%9C%E7%B4%A2%E7%BB%93%E6%9E%9C-min.jpg?raw=true)
