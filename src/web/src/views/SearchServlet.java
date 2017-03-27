@@ -234,7 +234,7 @@ public class SearchServlet extends HttpServlet {
             // 1. 拿出网页数量(大于 200 个拿 200 个, 小于 200 个拿全部)
             ArrayList<News> baseSetForHITS = getBaseSet(rawNewsList);
             ArrayList<News> baseSetForPageRank = new ArrayList<>(baseSetForHITS);
-            totalNews = baseSetForHITS.size();
+//            totalNews = baseSetForHITS.size();
             // 2. 获取网页链接关系
             boolean[][] linkMatrix = getLinkMatrix(baseSetForHITS);
 
@@ -271,8 +271,8 @@ public class SearchServlet extends HttpServlet {
             request.setAttribute("hitsList", hitsList);
             request.setAttribute("pageRankList", pageRankList);
 
-            request.setAttribute("queryback", query);
-            request.setAttribute("totaln", totalNews);
+            request.setAttribute("queryBack", query);
+            request.setAttribute("totalNews", totalNews);
             request.setAttribute("perPageCount", perPageCount);
 
             // 计算搜索耗时
@@ -316,8 +316,8 @@ public class SearchServlet extends HttpServlet {
             SimpleHTMLFormatter formatter = new SimpleHTMLFormatter("<span style=\"color:red;\">", "</span>");
             Highlighter highLighter = new Highlighter(formatter, scorer);
 
-            // 返回前 500 条?
-            TopDocs topDocs = searcher.search(query2, 500);
+            // 返回前 200 条
+            TopDocs topDocs = searcher.search(query2, 200);
             if (topDocs != null) {
                 totalNews = topDocs.totalHits;
                 System.out.println("[*] 符合条件第文档总数：" + totalNews);

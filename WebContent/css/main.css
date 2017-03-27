@@ -116,13 +116,14 @@ body {
     width: 10%;
 }
 
+
 .nav_form {
     margin: 0;
 }
 
 .newmain {
-    width: 60%;
-    margin-left: 10%;
+    width: 100%;
+    margin-left: 3%; /* 为了能够分栏显示 */
 }
 
 h3 {
@@ -169,10 +170,10 @@ h3 {
     padding-left: 30px;
 }
 
-.paging hr {
+.newmain hr {
     height: 1px;
     margin: 0;
-    width: 75%;
+    width: 95%;
     background-color: #dee4ff;
 }
 
@@ -186,4 +187,18 @@ input#query {
     border-radius: 50px 0px 0px 50px;
     font: normal 13px 'trebuchet MS', arial, helvetica;
     padding: 10px;
+}
+
+.hitsResult {
+    float: left;
+    width: 580px
+}
+
+.pageRankResult {
+    float: right;
+    width: 600px;
+}
+
+.searchResult {
+    width: 1200px;
 }
