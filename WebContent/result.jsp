@@ -4,11 +4,12 @@
 <%@ page import="web.src.models.News" %>
 <%@taglib prefix="s" uri="/struts-tags" %>
 <%
-    List<News> arrlist = (List<News>) request.getAttribute("newslist");
+    List<News> hitsList = (List<News>) request.getAttribute("hitsList");    // hits 排序结果
+    List<News> pageRankList = (List<News>) request.getAttribute("pageRankList");    // pageRank 排序结果
     String queryback = (String) request.getAttribute("queryback");
     int totalnews = (Integer) request.getAttribute("totaln");
     double time = Double.parseDouble(request.getAttribute("time").toString());
-    Page pageInfo = (Page) request.getAttribute("page");
+    Page pageInfo = (Page) request.getAttribute("pageRankPage");
     int perPageCount = (Integer) request.getAttribute("perPageCount");  // 每一页要显示几个结果
     int p = 1, i;
 %>
@@ -53,22 +54,53 @@
         <% if (totalnews > 0) { %>| 用时<span class="newsnum"><%=time%></span>秒<% } %>
     </h4>
     <%
-        if (arrlist.size() > 0) {
-            Iterator<News> iter = arrlist.iterator();
-            News news;
-            while (iter.hasNext()) {
-                news = iter.next();
+        if (hitsList.size() > 0) {
+            Iterator<News> hitsIter = hitsList.iterator();
+            News hitsNews;
+            while (hitsIter.hasNext()) {
+                hitsNews = hitsIter.next();
     %>
 
     <div class="item">
         <h4>
-            <a href="<%=news.getURL()%> " target="_blank"><%=news.getTitle()%>
+            <a href="<%=hitsNews.getURL()%> " target="_blank"><%=hitsNews.getTitle()%>
             </a>
         </h4>
         <p>
-            <%=news.getSummary()%>
+            <%=hitsNews.getSummary()%>
             <br/>
-            <a href="<%=news.getURL()%>"><%=news.getURL()%>
+            <a href="<%=hitsNews.getURL()%>"><%=hitsNews.getURL()%>
+            </a>
+        </p>
+    </div>
+    <%
+            }
+        }
+    %>
+</div>
+
+<div class="newmain">
+    <h4>
+        共搜到<span class="newsnum"><%=totalnews%></span>条结果
+        <% if (totalnews > 0) { %>| 用时<span class="newsnum"><%=time%></span>秒<% } %>
+    </h4>
+    <%
+        if (pageRankList.size() > 0) {
+            Iterator<News> pageRankIter = pageRankList.iterator();
+            News pageRankNews;
+            while (pageRankIter.hasNext()) {
+                pageRankNews = pageRankIter.next();
+    %>
+
+    <div class="item">
+        <h4>
+            <a href="<%=pageRankNews.getURL()%> " target="_blank"><%=pageRankNews.getTitle()%>
+            </a>
+        </h4>
+        <p>
+            <%=pageRankNews.getSummary()%>
+            <br/>
+            <a href="<%=pageRankNews.getURL()%>"><%=pageRankNews.getURL()%>
             </a>
         </p>
     </div>
@@ -79,76 +111,76 @@
 </div>
 
 
-<div class="paging">
-    <%
-        //搜索到相应结果
-        if (totalnews > 0) {
-    %>
-    <ul>
-        <%
-            // 如果不是第一页
-            if (pageInfo.getPage() != 1) {
-        %>
-        <li>
-            <a href="search?query=<%=queryback%>&&p=1">首页 </a>
-        </li>
-        <li>
-            <a href="search?query=<%=queryback%>&&p=<%=pageInfo.getPage()-1==0?1:pageInfo.getPage()-1%>">上一页</a>
-        </li>
-        <%
-            }
-        %>
-        <%
-            // 总共有多少页
-            int totalPages = (int) Math.ceil((double) totalnews / (double) perPageCount);
+<%--<div class="paging">--%>
+<%--<%--%>
+<%--//搜索到相应结果--%>
+<%--if (totalnews > 0) {--%>
+<%--%>--%>
+<%--<ul>--%>
+<%--<%--%>
+<%--// 如果不是第一页--%>
+<%--if (pageInfo.getPage() != 1) {--%>
+<%--%>--%>
+<%--<li>--%>
+<%--<a href="search?query=<%=queryback%>&&p=1">首页 </a>--%>
+<%--</li>--%>
+<%--<li>--%>
+<%--<a href="search?query=<%=queryback%>&&p=<%=pageInfo.getPage()-1==0?1:pageInfo.getPage()-1%>">上一页</a>--%>
+<%--</li>--%>
+<%--<%--%>
+<%--}--%>
+<%--%>--%>
+<%--<%--%>
+<%--// 总共有多少页--%>
+<%--int totalPages = (int) Math.ceil((double) totalnews / (double) perPageCount);--%>
 
-            // 超过 10 页, 只显示 10 页
-            if (pageInfo.getPage() + 10 < totalPages) {
-                // 则最多只显示 10 页
-                totalPages = pageInfo.getPage() + 10;
-            }
+<%--// 超过 10 页, 只显示 10 页--%>
+<%--if (pageInfo.getPage() + 10 < totalPages) {--%>
+<%--// 则最多只显示 10 页--%>
+<%--totalPages = pageInfo.getPage() + 10;--%>
+<%--}--%>
 
-            for (i = pageInfo.getPage(); i <= totalPages; i++) {
-        %>
-        <li>
-            <a href="search?query=<%=queryback%>&&p=<%=i%>">
-                <%=i%>
-            </a>
-        </li>
-        <%
-            }
-        %>
-        <%
-            // 如果当前页数 < 总页数
-            if (pageInfo.getPage() < totalnews / perPageCount + 1) {
-        %>
-        <li><a href="search?query=<%=queryback%>&&p=<%=pageInfo.getPage()+1%>">下一页</a></li>
-        <%
-            }
-        %>
-    </ul>
-    <hr>
-    <%
-    } else {
-    %>
-    <p style="padding-top:.33em"> Your search - <em><%=queryback%>
-    </em> - did not match any documents.
-    </p>
-    <p style="margin-top:1em">Suggestions:</p>
-    <ul style="margin-left:1.3em;margin-bottom:7em">
-        <li>* Make sure that all words are spelled correctly.</li>
-        <br/>
-        <li>* Try different keywords.</li>
-        <br/>
-        <li>* Try more general keywords.</li>
-        <br/>
-        <li>* Try fewer keywords.</li>
-        <br/>
-    </ul>
-    <%
-        }
-    %>
-</div>
+<%--for (i = pageInfo.getPage(); i <= totalPages; i++) {--%>
+<%--%>--%>
+<%--<li>--%>
+<%--<a href="search?query=<%=queryback%>&&p=<%=i%>">--%>
+<%--<%=i%>--%>
+<%--</a>--%>
+<%--</li>--%>
+<%--<%--%>
+<%--}--%>
+<%--%>--%>
+<%--<%--%>
+<%--// 如果当前页数 < 总页数--%>
+<%--if (pageInfo.getPage() < totalnews / perPageCount + 1) {--%>
+<%--%>--%>
+<%--<li><a href="search?query=<%=queryback%>&&p=<%=pageInfo.getPage()+1%>">下一页</a></li>--%>
+<%--<%--%>
+<%--}--%>
+<%--%>--%>
+<%--</ul>--%>
+<%--<hr>--%>
+<%--<%--%>
+<%--} else {--%>
+<%--%>--%>
+<%--<p style="padding-top:.33em"> Your search - <em><%=queryback%>--%>
+<%--</em> - did not match any documents.--%>
+<%--</p>--%>
+<%--<p style="margin-top:1em">Suggestions:</p>--%>
+<%--<ul style="margin-left:1.3em;margin-bottom:7em">--%>
+<%--<li>* Make sure that all words are spelled correctly.</li>--%>
+<%--<br/>--%>
+<%--<li>* Try different keywords.</li>--%>
+<%--<br/>--%>
+<%--<li>* Try more general keywords.</li>--%>
+<%--<br/>--%>
+<%--<li>* Try fewer keywords.</li>--%>
+<%--<br/>--%>
+<%--</ul>--%>
+<%--<%--%>
+<%--}--%>
+<%--%>--%>
+<%--</div>--%>
 
 
 <div class="footerinfo">

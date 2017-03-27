@@ -43,7 +43,7 @@ import sqlite.interactive.SQLInteractive;
 public class SearchServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
     private static int totalNews = 0;
-    private static final int perPageCount = 5;
+    private static final int perPageCount = 20; // 设置每页显示多少条结果
 
     public SearchServlet() {
         super();
@@ -228,48 +228,49 @@ public class SearchServlet extends HttpServlet {
             int p = (pageNum == null) ? 1 : Integer.parseInt(pageNum);
             System.out.println(String.format("[*] 用户要显示第 %s 页, 实际显示第 %d 页", pageNum, p));
 
-            // 获取排序方式
-            String sortMethod = request.getParameter("sortnews");
-            sortMethod = sortMethod == null ? "HITS" : sortMethod;
-            System.out.println(String.format("[*] 用户希望使用的排序方式是: %s", sortMethod));
-
             // 这里得到的是原始的 N 个网页
             ArrayList<News> rawNewsList = getTopDoc(query, indexPathStr);
 
             // 1. 拿出网页数量(大于 200 个拿 200 个, 小于 200 个拿全部)
-            ArrayList<News> baseSet = getBaseSet(rawNewsList);
-            totalNews = baseSet.size();
+            ArrayList<News> baseSetForHITS = getBaseSet(rawNewsList);
+            ArrayList<News> baseSetForPageRank = new ArrayList<>(baseSetForHITS);
+            totalNews = baseSetForHITS.size();
             // 2. 获取网页链接关系
-            boolean[][] linkMatrix = getLinkMatrix(baseSet);
+            boolean[][] linkMatrix = getLinkMatrix(baseSetForHITS);
 
             // 3. 按 HITS 排序或者 PageRank 排序
-            ArrayList<News> sortedPagesList = new ArrayList<>();
-            if ("HITS".equals(sortMethod)) {
-                // HITS 排序插入到这里
-                MyHITS hits = new MyHITS(baseSet);
-                sortedPagesList = hits.hitsSort(linkMatrix);
-            } else if ("PageRank".equals(sortMethod)) {
-                // PageRank 排序插入到这里
-                MyPageRank pageRank = new MyPageRank(baseSet);
-                sortedPagesList = pageRank.pageRankSort(pageRank.doubleMatrix(linkMatrix));
-            } else {
-                throw new ServletException(String.format("[-] 用户选择了不支持的排序算法: %s", sortMethod));
-            }
+            // HITS 排序
+            MyHITS hits = new MyHITS(baseSetForHITS);
+            ArrayList<News> hitsArrayList = hits.hitsSort(linkMatrix);
 
-            // 获取要展示到前端的页面
-            Page page = new Page(p, sortedPagesList.size() / perPageCount + 1, perPageCount, sortedPagesList.size(),
+            // 设置 HITS 要展示到前端的页面
+            Page hitsPage = new Page(p, hitsArrayList.size() / perPageCount + 1, perPageCount, hitsArrayList.size(),
                     perPageCount * (p - 1), perPageCount * p, true, p == 1 ? false : true);
-            System.out.println(page.toString());
             // 修正 BUG, 这里如果超出索引值, 参考: http://stackoverflow.com/questions/12099721/how-to-use-sublist
-            List<News> pageList = sortedPagesList.subList(perPageCount * (p - 1),
-                    perPageCount * p > sortedPagesList.size() ? sortedPagesList.size() : perPageCount * p);
-
+            List<News> hitsList = hitsArrayList.subList(perPageCount * (p - 1),
+                    perPageCount * p > hitsArrayList.size() ? hitsArrayList.size() : perPageCount * p);
             // 设置分页
-            System.out.println(String.format("[*] 要展示到前端的 sortedPagesList 长度为: %s", sortedPagesList.size()));
+            System.out.println(String.format("[*] 要展示到前端的 hitsList 长度为: %s", hitsList.size()));
+
+            // PageRank 排序
+            MyPageRank pageRank = new MyPageRank(baseSetForPageRank);
+            ArrayList<News> pageRankArrayList = pageRank.pageRankSort(pageRank.doubleMatrix(linkMatrix));
+
+            // 设置 HITS 要展示到前端的页面
+            Page pageRankPage = new Page(p, pageRankArrayList.size() / perPageCount + 1, perPageCount, pageRankArrayList.size(),
+                    perPageCount * (p - 1), perPageCount * p, true, p == 1 ? false : true);
+            // 修正 BUG, 这里如果超出索引值, 参考: http://stackoverflow.com/questions/12099721/how-to-use-sublist
+            List<News> pageRankList = pageRankArrayList.subList(perPageCount * (p - 1),
+                    perPageCount * p > pageRankArrayList.size() ? pageRankArrayList.size() : perPageCount * p);
+            // 设置分页
+            System.out.println(String.format("[*] 要展示到前端的 pageRankList 长度为: %s", pageRankList.size()));
 
             // jsp 相关设定
             request.setAttribute("query", query);
-            request.setAttribute("newslist", pageList);
+
+            request.setAttribute("hitsList", hitsList);
+            request.setAttribute("pageRankList", pageRankList);
+
             request.setAttribute("queryback", query);
             request.setAttribute("totaln", totalNews);
             request.setAttribute("perPageCount", perPageCount);
@@ -279,8 +280,6 @@ public class SearchServlet extends HttpServlet {
             long Time = endTime - starTime;
             request.setAttribute("time", (double) Time / 1000);
 
-            //
-            request.setAttribute("page", page);
             request.getRequestDispatcher("result.jsp").forward(request, response);
         } else {
             // 重定向到错误页面
