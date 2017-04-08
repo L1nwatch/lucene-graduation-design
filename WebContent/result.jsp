@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <%@page language="java" contentType="text/html; charset=UTF-8"
-        pageEncoding="UTF-8" import="web.src.models.*,java.util.*" %>
+        pageEncoding="UTF-8" import="java.util.*" %>
 <%@ page import="web.src.models.News" %>
 <%@taglib prefix="s" uri="/struts-tags" %>
 <%
@@ -61,7 +61,7 @@
 
             <div class="item" style="border-right: 1px solid #cccccc;">
                 <h4>
-                    <a href="<%=hitsNews.getURL()%> " target="_blank"><%=hitsNews.getTitle()%>
+                    <a id="id_hits_result" href="<%=hitsNews.getURL()%> " target="_blank"><%=hitsNews.getTitle()%>
                     </a>
                 </h4>
                 <p>
@@ -89,7 +89,7 @@
 
             <div class="item">
                 <h4>
-                    <a href="<%=pageRankNews.getURL()%> " target="_blank"><%=pageRankNews.getTitle()%>
+                    <a id="id_page_rank_result" href="<%=pageRankNews.getURL()%> " target="_blank"><%=pageRankNews.getTitle()%>
                     </a>
                 </h4>
                 <p>
