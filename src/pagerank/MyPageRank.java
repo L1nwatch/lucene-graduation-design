@@ -102,8 +102,8 @@ public class MyPageRank {
         double[] pageRankVector = new double[pageNum];
         Arrays.fill(pageRankVector, 1);  // 初始每个页面的pageRank值为1
 
-        // 阻尼系数
-        double damp = 0.5;
+        // 阻尼系数, wiki 的推荐数值
+        double damp = 0.85;
         // 链接概率矩阵
         double[][] A = new double[pageNum][pageNum];
         double[][] e = new double[pageNum][pageNum];

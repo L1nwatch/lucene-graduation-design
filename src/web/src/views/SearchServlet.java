@@ -234,21 +234,20 @@ public class SearchServlet extends HttpServlet {
             // 1. 拿出网页数量(大于 200 个拿 200 个, 小于 200 个拿全部)
             ArrayList<News> baseSetForHITS = getBaseSet(rawNewsList);
             ArrayList<News> baseSetForPageRank = new ArrayList<>(baseSetForHITS);
-//            totalNews = baseSetForHITS.size();
             // 2. 获取网页链接关系
             boolean[][] linkMatrix = getLinkMatrix(baseSetForHITS);
 
             // 3. 按 HITS 排序或者 PageRank 排序
             // HITS 排序
             MyHITS hits = new MyHITS(baseSetForHITS);
-            ArrayList<News> hitsArrayList = hits.hitsSort(linkMatrix);
+            ArrayList<News> auth_sort_result = new ArrayList<>(hits.hitsSort(linkMatrix, "Authority"));
+            // 插入 HITS 排序过后的权威页面
+            List<News> hitsList = auth_sort_result.subList(0, perPageCount / 2);
 
-            // 设置 HITS 要展示到前端的页面
-            Page hitsPage = new Page(p, hitsArrayList.size() / perPageCount + 1, perPageCount, hitsArrayList.size(),
-                    perPageCount * (p - 1), perPageCount * p, true, p == 1 ? false : true);
-            // 修正 BUG, 这里如果超出索引值, 参考: http://stackoverflow.com/questions/12099721/how-to-use-sublist
-            List<News> hitsList = hitsArrayList.subList(perPageCount * (p - 1),
-                    perPageCount * p > hitsArrayList.size() ? hitsArrayList.size() : perPageCount * p);
+            ArrayList<News> hub_sort_result = new ArrayList<>(hits.sortByHITSResult("Hub"));
+            // 插入 HITS 排序过后的中心页面
+            hitsList.addAll(hub_sort_result.subList(0, perPageCount / 2));
+
             // 设置分页
             System.out.println(String.format("[*] 要展示到前端的 hitsList 长度为: %s", hitsList.size()));
 

@@ -50,14 +50,25 @@
     <div class="searchResult">
         <div class="hitsResult">
             <h4 style="text-align: center"> HITS 排序</h4>
+            <h5 style="text-align: center"> 权威页面</h5>
 
             <%
+                int hits_display_counts = 0;
                 if (hitsList.size() > 0) {
                     Iterator<News> hitsIter = hitsList.iterator();
                     News hitsNews;
                     while (hitsIter.hasNext()) {
-                        hitsNews = hitsIter.next();
+
+                        if (hits_display_counts == hitsList.size() / 2) {
+
             %>
+            <h5 style="text-align: center"> 中心页面</h5>
+            <%
+                }
+                hits_display_counts += 1;
+                hitsNews = hitsIter.next();
+            %>
+
 
             <div class="item" style="border-right: 1px solid #cccccc;">
                 <h4>
@@ -89,7 +100,8 @@
 
             <div class="item">
                 <h4>
-                    <a id="id_page_rank_result" href="<%=pageRankNews.getURL()%> " target="_blank"><%=pageRankNews.getTitle()%>
+                    <a id="id_page_rank_result" href="<%=pageRankNews.getURL()%> "
+                       target="_blank"><%=pageRankNews.getTitle()%>
                     </a>
                 </h4>
                 <p>

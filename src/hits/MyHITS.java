@@ -28,25 +28,31 @@ public class MyHITS {
     }
 
 
-    private ArrayList<News> sortByHITSResult(double[] authority) {
-        // 将计算得到的权威值保存到 news 之中
-        for (int i = 0; i < authority.length; ++i) {
-            this.pagesList.get(i).setAuthority(authority[i]);
+    public ArrayList<News> sortByHITSResult(String choice) {
+        if (choice.equals("Hub")) {
+            // 按中心值排序
+            Collections.sort(this.pagesList, Collections.reverseOrder(new Comparator<News>() {
+                @Override
+                public int compare(News o1, News o2) {
+                    return Double.compare(o1.getHub(), o2.getHub());
+                }
+            }));
+        } else if (choice.equals("Authority")) {
+            // 开始按权威值排序
+            Collections.sort(this.pagesList, Collections.reverseOrder(new Comparator<News>() {
+                @Override
+                public int compare(News o1, News o2) {
+                    return Double.compare(o1.getAuthority(), o2.getAuthority());
+                }
+            }));
         }
 
-        // 开始排序
-        Collections.sort(this.pagesList, Collections.reverseOrder(new Comparator<News>() {
-            @Override
-            public int compare(News o1, News o2) {
-                return Double.compare(o1.getAuthority(), o2.getAuthority());
-            }
-        }));
         return this.pagesList;
     }
 
 
     /**
-     * 输出结果页面，也就是 authority 权威值最高的页面
+     * 【弃用】输出结果页面，也就是 authority 权威值最高的页面
      * 以下代码参考: http://blog.csdn.net/androidlushangderen/article/details/43311943
      */
     public ArrayList<News> hitsSort2(boolean[][] linkMatrix) {
@@ -96,14 +102,20 @@ public class MyHITS {
 
         System.out.println(String.format("[*] 最终收敛成功"));
 
-        return sortByHITSResult(resultAuthority);
+        // 将计算得到的权威值、中心值保存到 news 之中
+        for (int i = 0; i < resultAuthority.length; ++i) {
+            this.pagesList.get(i).setAuthority(resultAuthority[i]);
+            this.pagesList.get(i).setHub(resultHub[i]);
+        }
+
+        return sortByHITSResult("Authority");
     }
 
     /**
      * 输出结果页面，也就是 authority 权威值最高的页面
      * 以下代码参考 wiki: https://en.wikipedia.org/wiki/HITS_algorithm
      */
-    public ArrayList<News> hitsSort(boolean[][] linkMatrix) {
+    public ArrayList<News> hitsSort(boolean[][] linkMatrix, String choice) {
         // 初始化 resultAuthority 和 resultHub, 默认值都为 1
         double[] resultAuthority = new double[pageNum];//网页Authority权威值
         double[] resultHub = new double[pageNum];//网页hub中心值
@@ -151,6 +163,12 @@ public class MyHITS {
 
         System.out.println(String.format("[*] 最终收敛成功"));
 
-        return sortByHITSResult(resultAuthority);
+        // 将计算得到的权威值、中心值保存到 news 之中
+        for (int i = 0; i < resultAuthority.length; ++i) {
+            this.pagesList.get(i).setAuthority(resultAuthority[i]);
+            this.pagesList.get(i).setHub(resultHub[i]);
+        }
+
+        return sortByHITSResult(choice);
     }
 }

@@ -10,6 +10,16 @@ public class News {
     private Integer ArticleLength;// 原来正文内容的长度
     private String URL;// 新闻 url
     private double authority;   // 权威值, HITS 算法需要
+
+    public double getHub() {
+        return hub;
+    }
+
+    public void setHub(double hub) {
+        this.hub = hub;
+    }
+
+    private double hub;         // 中心值, HITS 算法需要
     private double pageRank;    // pageRank 值, pageRank 算法需要
 
     public String getDomainID() {
