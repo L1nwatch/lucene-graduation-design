@@ -17,6 +17,13 @@ public class SQLInteractive {
     private Connection dbCursor = null;    // 连接数据库用的
 
     public int checkPagesLinkRelationShip(News p, News q) {
+        /*
+         返回结果:
+            0: 没有链接关系
+            1: p 指向 q
+            2: q 指向 p
+            3: p 与 q 互相指向
+         */
         int checkResult = 0;
         String pId = p.getDomainID();
         String qId = q.getDomainID();
@@ -56,8 +63,6 @@ public class SQLInteractive {
         } finally {
             return checkResult;
         }
-
-
     }
 
     /*

@@ -24,7 +24,12 @@ public class News {
 
     public String getDomainID() {
         if (DomainID == null) {
-            DomainID = id.split("-")[1];
+            if (id.indexOf("-") > 0) {
+                DomainID = id.split("-")[1];
+            } else {
+                DomainID = id;
+            }
+
         }
 
         return DomainID;
