@@ -15,18 +15,20 @@ public class SQLInteractive {
     private Connection dbCursor = null;    // 连接数据库用的
     private boolean domain_link_matrix[][] = new boolean[286][286];
     private String domain_id_list[] = new String[286];
+    private String url_list[] = new String[286];
 
     public SQLInteractive() {
         startConnection();
         try {
             Statement stmt = dbCursor.createStatement();
 
-            // 创建域名数组, 方便查找
+            // 创建域名、URL 数组, 方便查找
             ResultSet rs = stmt.executeQuery(
-                    String.format("SELECT order_id, page_id FROM domainid2urlindoc;")
+                    String.format("SELECT order_id, page_id, page_url FROM domainid2urlindoc;")
             );
             while (rs.next()) {
                 domain_id_list[rs.getInt("order_id") - 1] = rs.getString("page_id");
+                url_list[rs.getInt("order_id") - 1] = rs.getString("page_url");
             }
 
             // 创建域名链接矩阵
@@ -39,7 +41,6 @@ public class SQLInteractive {
                 y = Arrays.asList(domain_id_list).indexOf(rs.getString("out_id"));
                 domain_link_matrix[x][y] = true;
             }
-
 
             rs.close();
             stmt.close();
@@ -110,108 +111,57 @@ public class SQLInteractive {
     }
 
     /*
-     * 检查某一 pageId 是否存在于 LinkInDoc 之中
+     * 检查某一 domainId 是否存在于 LinkInDoc 之中
      */
-    public boolean checkPageIdInLinkInDoc(String pageId) {
-        boolean result;
-        try {
-            Statement stmt = dbCursor.createStatement();
-            ResultSet rs = stmt.executeQuery(String.format("SELECT * FROM linkindoc where domain_id='%s';", pageId));
-            if (rs.next()) {
-                result = true;
-            } else {
-                result = false;
-            }
+    public boolean checkDomainIdInLinkInDoc(String domainId) {
 
-            rs.close();
-            stmt.close();
-
-            return result;
-
-        } catch (Exception e) {
-            System.out.println(String.format("[*] 检查过程中发生了错误, %s:%s", e.getClass().getName(), e.getMessage()));
+        int index = Arrays.asList(domain_id_list).indexOf(domainId);
+        if (index > -1) {
+            return true;
+        } else {
             return false;
         }
+
     }
 
     /*
-     * 从表 LinkInDoc 中获取所有指向给定 pageId 的页面
+     * 从表 LinkInDoc 中获取所有指向给定 domainId 的页面
      */
-    public ArrayList<String> getAllInFromLinkInDoc(String pageId) {
+    public ArrayList<String> getAllInFromLinkInDoc(String domainId) {
         ArrayList<String> resultList = new ArrayList<>();
 
-        try {
-            Statement stmt = dbCursor.createStatement();
-            ResultSet rs = stmt.executeQuery(String.format("SELECT distinct domain_id FROM linkindoc where out_id='%s';", pageId));
-            while (rs.next()) {
-                resultList.add(rs.getString("domain_id"));
+        for (int i = 0; i < domain_link_matrix.length; ++i) {
+            int index = Arrays.asList(domain_id_list).indexOf(domainId);
+            if (domain_link_matrix[i][index]) {
+                resultList.add(domain_id_list[i]);
             }
-            rs = stmt.executeQuery(String.format("SELECT distinct in_id FROM linkindoc where domain_id='%s';", pageId));
-            while (rs.next()) {
-                String inID = rs.getString("in_id");
-                if (inID != null) {
-                    resultList.add(inID);
-                }
-            }
-
-            rs.close();
-            stmt.close();
-
-        } catch (Exception e) {
-            System.out.println(String.format("[*] 检查过程中发生了错误, %s:%s", e.getClass().getName(), e.getMessage()));
-        } finally {
-            return resultList;
         }
+        return resultList;
     }
 
     /*
-     * 从表 LinkInDoc 中获取给定 pageId 指向的所有页面
+     * 从表 LinkInDoc 中获取给定 domainId 指向的所有页面
      */
-    public ArrayList<String> getAllOutFromLinkInDoc(String pageId) {
+    public ArrayList<String> getAllOutFromLinkInDoc(String domainId) {
         ArrayList<String> resultList = new ArrayList<>();
 
-        try {
-            Statement stmt = dbCursor.createStatement();
-            ResultSet rs = stmt.executeQuery(String.format("SELECT distinct domain_id FROM linkindoc where in_id='%s';", pageId));
-            while (rs.next()) {
-                resultList.add(rs.getString("domain_id"));
+        for (int i = 0; i < domain_link_matrix.length; ++i) {
+            int index = Arrays.asList(domain_id_list).indexOf(domainId);
+            if (domain_link_matrix[index][i]) {
+                resultList.add(domain_id_list[i]);
             }
-            rs = stmt.executeQuery(String.format("SELECT distinct out_id FROM linkindoc where domain_id='%s';", pageId));
-            while (rs.next()) {
-                String out_id = rs.getString("out_id");
-                if (out_id != null) {
-                    resultList.add(out_id);
-                }
-            }
-
-            rs.close();
-            stmt.close();
-
-        } catch (Exception e) {
-            System.out.println(String.format("[*] 检查过程中发生了错误, %s:%s", e.getClass().getName(), e.getMessage()));
-        } finally {
-            return resultList;
         }
+
+        return resultList;
     }
 
     public ArrayList<String> getURLFromDomainID2URL(String domainId) {
         ArrayList<String> resultList = new ArrayList<>();
 
-        try {
-            Statement stmt = dbCursor.createStatement();
-            ResultSet rs = stmt.executeQuery(String.format("select page_url from domainid2urlindoc where page_id='%s';", domainId));
-            while (rs.next()) {
-                resultList.add(rs.getString("page_url"));
-            }
+        int index = Arrays.asList(domain_id_list).indexOf(domainId);
+        resultList.add(url_list[index]);
 
-            rs.close();
-            stmt.close();
-
-        } catch (Exception e) {
-            System.out.println(String.format("[*] 检查过程中发生了错误, %s:%s", e.getClass().getName(), e.getMessage()));
-        } finally {
-            return resultList;
-        }
+        return resultList;
     }
 
     /*
@@ -221,10 +171,10 @@ public class SQLInteractive {
         SQLInteractive test = new SQLInteractive();
         test.startConnection();
 
-        if (test.checkPageIdInLinkInDoc("69713306c0bb3300")) {
+        if (test.checkDomainIdInLinkInDoc("69713306c0bb3300")) {
             System.out.println("[*] 69713306c0bb3300 存在于 linkindoc 表中");
         }
-        if (test.checkPageIdInLinkInDoc("123456")) {
+        if (test.checkDomainIdInLinkInDoc("123456")) {
             System.out.println("[*] 123456 存在于 linkindoc 表中");
         }
 
@@ -232,9 +182,9 @@ public class SQLInteractive {
         allIdList.forEach(each_id -> {
             System.out.println(String.format("[*] %s 指向了 69713306c0bb3300", each_id));
         });
-        allIdList = test.getAllInFromLinkInDoc("aca5d9a362314a50");
+        allIdList = test.getAllInFromLinkInDoc("be7f32f06cef7000");
         allIdList.forEach(each_id -> {
-            System.out.println(String.format("[*] %s 指向了 aca5d9a362314a50", each_id));
+            System.out.println(String.format("[*] %s 指向了 be7f32f06cef7000", each_id));
         });
 
 

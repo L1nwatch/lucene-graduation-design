@@ -3,7 +3,6 @@ package web.src.views;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -58,21 +57,20 @@ public class SearchServlet extends HttpServlet {
 
     /*
      * 通过访问数据库获取指定页面指向的所有页面
-     * TODO: 需要进行优化
      */
-    protected ArrayList<News> getOutPages(String pageId, SQLInteractive dbOperator) {
+    protected ArrayList<News> getOutPages(String domainId, SQLInteractive dbOperator) {
         ArrayList<News> resultList = new ArrayList<>();
         // 查询该 id 是否存在于表 linkindoc 中
-        if (dbOperator.checkPageIdInLinkInDoc(pageId)) {
+        if (dbOperator.checkDomainIdInLinkInDoc(domainId)) {
             // 存在则把该页面指向的所有 ID 拿出来
-            ArrayList<String> allIDList = dbOperator.getAllOutFromLinkInDoc(pageId);
+            ArrayList<String> allIDList = dbOperator.getAllOutFromLinkInDoc(domainId);
 
             // 然后到 domainid2url 这个表中把所有链接拿出来
             allIDList.forEach(eachId -> {
                 ArrayList<String> allURLList = dbOperator.getURLFromDomainID2URL(eachId);
 
                 allURLList.forEach(each_url -> {
-                    String content = String.format("这是一个由搜索结果 %s 指向的页面", pageId);
+                    String content = String.format("这是一个由搜索结果 %s 指向的页面", domainId);
                     // 创建一个 news, 添加进 resultList 中
                     News newPage = new News(each_url, content,
                             String.format("xx-%s", eachId), "某个被搜索结果指向的页面", content.length());
@@ -86,12 +84,11 @@ public class SearchServlet extends HttpServlet {
 
     /*
      * 通过访问数据库获取所有指向给定页面的页面
-     * TODO: 需要进行优化
      */
     protected ArrayList<News> getInPages(String pageId, SQLInteractive dbOperator) {
         ArrayList<News> resultList = new ArrayList<>();
         // 查询该 id 是否存在于表 linkindoc 中
-        if (dbOperator.checkPageIdInLinkInDoc(pageId)) {
+        if (dbOperator.checkDomainIdInLinkInDoc(pageId)) {
             // 存在则把所有指向该页面的 ID 拿出来
             ArrayList<String> allIDList = dbOperator.getAllInFromLinkInDoc(pageId);
 
