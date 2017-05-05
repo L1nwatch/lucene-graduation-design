@@ -1,11 +1,9 @@
 package sqlite.interactive;
 
+import java.sql.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 //import java.sql.*;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.Statement;
-import java.sql.ResultSet;
 
 import web.src.models.News;
 
@@ -15,54 +13,77 @@ import web.src.models.News;
  */
 public class SQLInteractive {
     private Connection dbCursor = null;    // 连接数据库用的
+    private boolean domain_link_matrix[][] = new boolean[286][286];
+    private String domain_id_list[] = new String[286];
 
+    public SQLInteractive() {
+        startConnection();
+        try {
+            Statement stmt = dbCursor.createStatement();
+
+            // 创建域名数组, 方便查找
+            ResultSet rs = stmt.executeQuery(
+                    String.format("SELECT order_id, page_id FROM domainid2urlindoc;")
+            );
+            while (rs.next()) {
+                domain_id_list[rs.getInt("order_id") - 1] = rs.getString("page_id");
+            }
+
+            // 创建域名链接矩阵
+            rs = stmt.executeQuery(
+                    String.format("SELECT domain_id, out_id FROM linkindoc;")
+            );
+            while (rs.next()) {
+                int x, y;
+                x = Arrays.asList(domain_id_list).indexOf(rs.getString("domain_id"));
+                y = Arrays.asList(domain_id_list).indexOf(rs.getString("out_id"));
+                domain_link_matrix[x][y] = true;
+            }
+
+
+            rs.close();
+            stmt.close();
+        } catch (SQLException e) {
+            System.out.println("[-] 创建域名 ID 的索引数组出错");
+            System.out.println(e);
+        } finally {
+            closeConnection();
+        }
+    }
+
+    /**
+     * 给定两个网页, 判断这两个网页之间是否存在链接关系
+     * TODO: 需要高度进行优化
+     * 返回结果:
+     * 0: 没有链接关系
+     * 1: p 指向 q
+     * 2: q 指向 p
+     * 3: p 与 q 互相指向
+     *
+     * @param p 网页 p
+     * @param q 网页 q
+     * @return int, 0 or 1 or 2 o 3
+     */
     public int checkPagesLinkRelationShip(News p, News q) {
-        /*
-         返回结果:
-            0: 没有链接关系
-            1: p 指向 q
-            2: q 指向 p
-            3: p 与 q 互相指向
-         */
         int checkResult = 0;
         String pId = p.getDomainID();
         String qId = q.getDomainID();
 
-        try {
-            Statement stmt = dbCursor.createStatement();
 
-            // 查询一下 p 是否指向 q, 有两种情况
-            // domain_id = p, out_id = q
-            // domain_id = q, in_id = p
-            ResultSet rs = stmt.executeQuery(String.format("SELECT * FROM linkindoc WHERE domain_id='%s' and out_id='%s';", pId, qId));
-            if (rs.next()) {
-                checkResult = checkResult ^ 1;
-            }
-            rs = stmt.executeQuery(String.format("SELECT * FROM linkindoc WHERE domain_id='%s' and in_id='%s';", qId, pId));
-            if (rs.next()) {
-                checkResult = checkResult ^ 1;
-            }
-
-            // 查询一下 q 是否指向 p, 有两种情况
-            // domain_id = q, out_id = p
-            // domain_id = p, in_id = q
-            rs = stmt.executeQuery(String.format("SELECT * FROM linkindoc WHERE domain_id='%s' and out_id='%s';", qId, pId));
-            if (rs.next()) {
-                checkResult = checkResult ^ 2;
-            }
-            rs = stmt.executeQuery(String.format("SELECT * FROM linkindoc WHERE domain_id='%s' and in_id='%s';", pId, qId));
-            if (rs.next()) {
-                checkResult = checkResult ^ 2;
-            }
-
-            rs.close();
-            stmt.close();
-
-        } catch (Exception e) {
-            System.out.println(String.format("[*] 检查过程中发生了错误, %s:%s", e.getClass().getName(), e.getMessage()));
-        } finally {
-            return checkResult;
+        // 查询一下 p 是否指向 q
+        int x, y;
+        x = Arrays.asList(domain_id_list).indexOf(pId);
+        y = Arrays.asList(domain_id_list).indexOf(qId);
+        if (domain_link_matrix[x][y]) {
+            checkResult = checkResult ^ 1;
         }
+
+        // 查询一下 q 是否指向 p
+        if (domain_link_matrix[y][x]) {
+            checkResult = checkResult ^ 2;
+        }
+
+        return checkResult;
     }
 
     /*
@@ -229,25 +250,25 @@ public class SQLInteractive {
             System.out.println(String.format("[*] 15a13306c0bb3300 的 URL 是 %s, 正确答案是 %s 和 %s", each_url, right_url, right_url2));
         });
 
-        News a = new News("url", "content", "1df13306c0bb3300", "title");
-        News b = new News("url", "content", "25713306c0bb3300", "title");
+        News a = new News("url", "content", "352f32f06cef7000", "title");
+        News b = new News("url", "content", "261f32f06cef7000", "title");
         int checkResult = test.checkPagesLinkRelationShip(a, b);
-        System.out.println(String.format("[*] 1df13306c0bb3300 与 25713306c0bb3300 的链接关系为 %d", checkResult));
+        System.out.println(String.format("[*] 352f32f06cef7000 与 261f32f06cef7000 的链接关系为 %d", checkResult));
 
-        a = new News("url", "content", "aca5d9a362314a50", "title");
-        b = new News("url", "content", "60f5d9a362314a50", "title");
+        a = new News("url", "content", "261f32f06cef7000", "title");
+        b = new News("url", "content", "261f32f06cef7000", "title");
         checkResult = test.checkPagesLinkRelationShip(a, b);
-        System.out.println(String.format("[*] aca5d9a362314a50 与 60f5d9a362314a50 的链接关系为 %d", checkResult));
+        System.out.println(String.format("[*] 261f32f06cef7000 与 261f32f06cef7000 的链接关系为 %d", checkResult));
 
-        a = new News("url", "content", "15a13306c0bb3300", "title");
-        b = new News("url", "content", "15a13306c0bb3300", "title");
+        a = new News("url", "content", "a975d9a362314a50", "title");
+        b = new News("url", "content", "752f32f06cef7000", "title");
         checkResult = test.checkPagesLinkRelationShip(a, b);
-        System.out.println(String.format("[*] 15a13306c0bb3300 与 15a13306c0bb3300 的链接关系为 %d", checkResult));
+        System.out.println(String.format("[*] a975d9a362314a50 与 752f32f06cef7000 的链接关系为 %d", checkResult));
 
-        a = new News("url", "content", "b40d5a05c5677d40", "title");
-        b = new News("url", "content", "aca5d9a362314a50", "title");
+        a = new News("url", "content", "ba6f32f06cef7000", "title");
+        b = new News("url", "content", "672f32f06cef7000", "title");
         checkResult = test.checkPagesLinkRelationShip(a, b);
-        System.out.println(String.format("[*] b40d5a05c5677d40 与 aca5d9a362314a50 的链接关系为 %d", checkResult));
+        System.out.println(String.format("[*] ba6f32f06cef7000 与 672f32f06cef7000 的链接关系为 %d", checkResult));
 
         test.closeConnection();
 

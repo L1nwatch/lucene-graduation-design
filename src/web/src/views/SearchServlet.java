@@ -44,6 +44,7 @@ public class SearchServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
     private static int totalNews = 0;
     private static final int perPageCount = 20; // 设置每页显示多少条结果
+    private static SQLInteractive sqlInteractive = new SQLInteractive();    // 用于数据库连接
 
     public SearchServlet() {
         super();
@@ -57,6 +58,7 @@ public class SearchServlet extends HttpServlet {
 
     /*
      * 通过访问数据库获取指定页面指向的所有页面
+     * TODO: 需要进行优化
      */
     protected ArrayList<News> getOutPages(String pageId, SQLInteractive dbOperator) {
         ArrayList<News> resultList = new ArrayList<>();
@@ -84,6 +86,7 @@ public class SearchServlet extends HttpServlet {
 
     /*
      * 通过访问数据库获取所有指向给定页面的页面
+     * TODO: 需要进行优化
      */
     protected ArrayList<News> getInPages(String pageId, SQLInteractive dbOperator) {
         ArrayList<News> resultList = new ArrayList<>();
@@ -111,11 +114,12 @@ public class SearchServlet extends HttpServlet {
 
     /*
      * 通过链接关系库扩展根集变为基本集
+     * TODO: 需要高度优化
      */
     protected ArrayList<News> expandSet(ArrayList<News> rawNewsList, Set<String> pagesSet) {
         ArrayList<News> resultList = new ArrayList<>(rawNewsList);
         Set<String> expandPagesSet = new HashSet<>(pagesSet);
-        SQLInteractive dbOperator = new SQLInteractive();
+        SQLInteractive dbOperator = sqlInteractive;
         dbOperator.startConnection();
 
         // 遍历每一个页面
@@ -164,9 +168,12 @@ public class SearchServlet extends HttpServlet {
             }
         });
 
+
         if (resultList.size() > 200) {
+            System.out.println("[*] 接下来要对 200 个网页进行扩展");
             return expandSet((ArrayList<News>) resultList.subList(0, 200), pagesSet);
         } else {
+            System.out.println(String.format("[*] 接下来要对 %d 个网页进行扩展", resultList.size()));
             return expandSet(resultList, pagesSet);
         }
     }
@@ -176,7 +183,7 @@ public class SearchServlet extends HttpServlet {
      */
     protected boolean[][] getLinkMatrix(ArrayList<News> pagesList) {
         boolean[][] linkMatrix = new boolean[pagesList.size()][pagesList.size()];
-        SQLInteractive dbOperator = new SQLInteractive();
+        SQLInteractive dbOperator = sqlInteractive;
 
         dbOperator.startConnection();
 
@@ -232,13 +239,21 @@ public class SearchServlet extends HttpServlet {
             ArrayList<News> rawNewsList = getTopDoc(query, indexPathStr);
 
             // 1. 拿出网页数量(大于 200 个拿 200 个, 小于 200 个拿全部)
+            long my_func_start = System.currentTimeMillis();    // 用来统计局部函数耗时的
             ArrayList<News> baseSetForHITS = getBaseSet(rawNewsList);
             ArrayList<News> baseSetForPageRank = new ArrayList<>(baseSetForHITS);
+            long my_func_end = System.currentTimeMillis();      // 用来统计局部函数耗时的
+            System.out.println(String.format("[*] 扩展根集为基本集的操作完成, 耗时 %d ms", my_func_end - my_func_start));
+
             // 2. 获取网页链接关系
+            my_func_start = System.currentTimeMillis();    // 用来统计局部函数耗时的
             boolean[][] linkMatrix = getLinkMatrix(baseSetForHITS);
+            my_func_end = System.currentTimeMillis();      // 用来统计局部函数耗时的
+            System.out.println(String.format("[*] 获取网页间的链接关系操作完成, 耗时 %d ms", my_func_end - my_func_start));
 
             // 3. 按 HITS 排序或者 PageRank 排序
             // HITS 排序
+            my_func_start = System.currentTimeMillis();    // 用来统计局部函数耗时的
             MyHITS hits = new MyHITS(baseSetForHITS);
             ArrayList<News> auth_sort_result = new ArrayList<>(hits.hitsSort(linkMatrix, "Authority"));
             // 插入 HITS 排序过后的权威页面
@@ -247,13 +262,18 @@ public class SearchServlet extends HttpServlet {
             ArrayList<News> hub_sort_result = new ArrayList<>(hits.sortByHITSResult("Hub"));
             // 插入 HITS 排序过后的中心页面
             hitsList.addAll(hub_sort_result.subList(0, perPageCount / 2));
+            my_func_end = System.currentTimeMillis();      // 用来统计局部函数耗时的
 
             // 设置分页
+            System.out.println(String.format("[*] HITS 排序完毕, 耗时 %d ms", my_func_end - my_func_start));
             System.out.println(String.format("[*] 要展示到前端的 hitsList 长度为: %s", hitsList.size()));
 
             // PageRank 排序
+            my_func_start = System.currentTimeMillis();    // 用来统计局部函数耗时的
             MyPageRank pageRank = new MyPageRank(baseSetForPageRank);
             ArrayList<News> pageRankArrayList = pageRank.pageRankSort(pageRank.doubleMatrix(linkMatrix));
+            my_func_end = System.currentTimeMillis();      // 用来统计局部函数耗时的
+            System.out.println(String.format("[*] PageRank 排序完毕, 耗时: %d ms", my_func_end - my_func_start));
 
             // 设置 HITS 要展示到前端的页面
             Page pageRankPage = new Page(p, pageRankArrayList.size() / perPageCount + 1, perPageCount, pageRankArrayList.size(),
