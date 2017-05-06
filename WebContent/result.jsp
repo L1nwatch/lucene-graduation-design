@@ -72,13 +72,13 @@
 
             <div class="item" style="border-right: 1px solid #cccccc;">
                 <h4>
-                    <a id="id_hits_result" href="<%=hitsNews.getURL()%> " target="_blank"><%=hitsNews.getTitle()%>
+                    <a href="<%=hitsNews.getURL()%> " target="_blank"><%=hitsNews.getTitle()%>
                     </a>
                 </h4>
                 <p>
                     <%=hitsNews.getSummary()%>
                     <br/>
-                    <a href="<%=hitsNews.getURL()%>"><%=hitsNews.getURL()%>
+                    <a id="id_hits_result" href="<%=hitsNews.getURL()%>"><%=hitsNews.getURL()%>
                     </a>
                 </p>
             </div>
@@ -100,14 +100,14 @@
 
             <div class="item">
                 <h4>
-                    <a id="id_page_rank_result" href="<%=pageRankNews.getURL()%> "
+                    <a href="<%=pageRankNews.getURL()%> "
                        target="_blank"><%=pageRankNews.getTitle()%>
                     </a>
                 </h4>
                 <p>
                     <%=pageRankNews.getSummary()%>
                     <br/>
-                    <a href="<%=pageRankNews.getURL()%>"><%=pageRankNews.getURL()%>
+                    <a id="id_page_rank_result" href="<%=pageRankNews.getURL()%>"><%=pageRankNews.getURL()%>
                     </a>
                 </p>
             </div>

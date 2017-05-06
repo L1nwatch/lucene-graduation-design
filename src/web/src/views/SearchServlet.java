@@ -111,7 +111,6 @@ public class SearchServlet extends HttpServlet {
 
     /*
      * 通过链接关系库扩展根集变为基本集
-     * TODO: 需要高度优化
      */
     protected ArrayList<News> expandSet(ArrayList<News> rawNewsList, Set<String> pagesSet) {
         ArrayList<News> resultList = new ArrayList<>(rawNewsList);
@@ -173,6 +172,24 @@ public class SearchServlet extends HttpServlet {
             System.out.println(String.format("[*] 接下来要对 %d 个网页进行扩展", resultList.size()));
             return expandSet(resultList, pagesSet);
         }
+    }
+
+    /**
+     * 判断用户的查询词是否存在于基本集之中
+     *
+     * @param answerDomain 用户的查询词对应的标准答案域名
+     * @param baseSet      基本集
+     * @return true or false
+     */
+    protected boolean is_in_base_set(String answerDomain, ArrayList<News> baseSet) {
+        for (News each_new : baseSet) {
+            if (each_new.getDomainID().equals(answerDomain)) {
+                System.out.println(each_new.getArticle());
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /*
@@ -242,6 +259,14 @@ public class SearchServlet extends HttpServlet {
             long my_func_end = System.currentTimeMillis();      // 用来统计局部函数耗时的
             System.out.println(String.format("[*] 扩展根集为基本集的操作完成, 耗时 %d ms", my_func_end - my_func_start));
 
+            // 评测用: 判断用户的查询词对应的答案是否存在于基本集之中
+            if (is_in_base_set("69713306c0bb3300", baseSetForHITS)) {
+                System.out.println(String.format("[*] 查询词 %s 对应的标准答案【存在】于基本集中", query));
+            } else {
+                System.out.println(String.format("[-] 查询词 %s 对应的标准答案【不存在】于基本集中", query));
+            }
+
+
             // 2. 获取网页链接关系
             my_func_start = System.currentTimeMillis();    // 用来统计局部函数耗时的
             boolean[][] linkMatrix = getLinkMatrix(baseSetForHITS);
@@ -254,11 +279,12 @@ public class SearchServlet extends HttpServlet {
             MyHITS hits = new MyHITS(baseSetForHITS);
             ArrayList<News> auth_sort_result = new ArrayList<>(hits.hitsSort(linkMatrix, "Authority"));
             // 插入 HITS 排序过后的权威页面
-            List<News> hitsList = auth_sort_result.subList(0, perPageCount / 2);
+            int half_length = perPageCount / 2;
+            List<News> hitsList = auth_sort_result.subList(0, auth_sort_result.size() >= half_length ? half_length : auth_sort_result.size());
 
             ArrayList<News> hub_sort_result = new ArrayList<>(hits.sortByHITSResult("Hub"));
             // 插入 HITS 排序过后的中心页面
-            hitsList.addAll(hub_sort_result.subList(0, perPageCount / 2));
+            hitsList.addAll(hub_sort_result.subList(0, auth_sort_result.size() >= half_length ? half_length : auth_sort_result.size()));
             my_func_end = System.currentTimeMillis();      // 用来统计局部函数耗时的
 
             // 设置分页
