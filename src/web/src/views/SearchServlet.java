@@ -192,10 +192,14 @@ public class SearchServlet extends HttpServlet {
         return false;
     }
 
-    /*
+    /**
      * 获取网页链接关系, 以矩阵表示
+     *
+     * @param pagesList
+     * @param delete_inside_href true 表示要删除内联链接
+     * @return
      */
-    protected boolean[][] getLinkMatrix(ArrayList<News> pagesList) {
+    protected boolean[][] getLinkMatrix(ArrayList<News> pagesList, boolean delete_inside_href) {
         boolean[][] linkMatrix = new boolean[pagesList.size()][pagesList.size()];
         SQLInteractive dbOperator = sqlInteractive;
 
@@ -203,8 +207,15 @@ public class SearchServlet extends HttpServlet {
 
         for (int x = 0; x < pagesList.size(); ++x) {
             for (int y = x; y < pagesList.size(); ++y) {
-                int checkResult = dbOperator.checkPagesLinkRelationShip(pagesList.get(x), pagesList.get(y));
-                if (checkResult == 1) {
+                News page_x, page_y;
+                page_x = pagesList.get(x);
+                page_y = pagesList.get(y);
+                int checkResult = dbOperator.checkPagesLinkRelationShip(page_x, page_y);
+                if (delete_inside_href && page_x.getDomainID().equals(page_y.getDomainID())) {
+                    // 内联链接
+                    linkMatrix[x][y] = false;
+                    linkMatrix[y][x] = false;
+                } else if (checkResult == 1) {
                     // 表示 pagesList[x] 指向了 pagesList[y]
                     linkMatrix[x][y] = true;
                     linkMatrix[y][x] = false;
@@ -269,7 +280,8 @@ public class SearchServlet extends HttpServlet {
 
             // 2. 获取网页链接关系
             my_func_start = System.currentTimeMillis();    // 用来统计局部函数耗时的
-            boolean[][] linkMatrix = getLinkMatrix(baseSetForHITS);
+            boolean[][] linkMatrixForHITS = getLinkMatrix(baseSetForHITS, true);
+            boolean[][] linkMatrixForPageRank = getLinkMatrix(baseSetForHITS, false);
             my_func_end = System.currentTimeMillis();      // 用来统计局部函数耗时的
             System.out.println(String.format("[*] 获取网页间的链接关系操作完成, 耗时 %d ms", my_func_end - my_func_start));
 
@@ -277,7 +289,7 @@ public class SearchServlet extends HttpServlet {
             // HITS 排序
             my_func_start = System.currentTimeMillis();    // 用来统计局部函数耗时的
             MyHITS hits = new MyHITS(baseSetForHITS);
-            ArrayList<News> auth_sort_result = new ArrayList<>(hits.hitsSort(linkMatrix, "Authority"));
+            ArrayList<News> auth_sort_result = new ArrayList<>(hits.hitsSort(linkMatrixForHITS, "Authority"));
             // 插入 HITS 排序过后的权威页面
             int half_length = perPageCount / 2;
             List<News> hitsList = auth_sort_result.subList(0, auth_sort_result.size() >= half_length ? half_length : auth_sort_result.size());
@@ -294,13 +306,11 @@ public class SearchServlet extends HttpServlet {
             // PageRank 排序
             my_func_start = System.currentTimeMillis();    // 用来统计局部函数耗时的
             MyPageRank pageRank = new MyPageRank(baseSetForPageRank);
-            ArrayList<News> pageRankArrayList = pageRank.pageRankSort(pageRank.doubleMatrix(linkMatrix));
+            ArrayList<News> pageRankArrayList = pageRank.pageRankSort(pageRank.doubleMatrix(linkMatrixForPageRank));
             my_func_end = System.currentTimeMillis();      // 用来统计局部函数耗时的
             System.out.println(String.format("[*] PageRank 排序完毕, 耗时: %d ms", my_func_end - my_func_start));
 
-            // 设置 HITS 要展示到前端的页面
-            Page pageRankPage = new Page(p, pageRankArrayList.size() / perPageCount + 1, perPageCount, pageRankArrayList.size(),
-                    perPageCount * (p - 1), perPageCount * p, true, p == 1 ? false : true);
+            // 设置 PageRank 要展示到前端的页面
             // 修正 BUG, 这里如果超出索引值, 参考: http://stackoverflow.com/questions/12099721/how-to-use-sublist
             List<News> pageRankList = pageRankArrayList.subList(perPageCount * (p - 1),
                     perPageCount * p > pageRankArrayList.size() ? pageRankArrayList.size() : perPageCount * p);
