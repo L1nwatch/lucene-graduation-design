@@ -18,6 +18,7 @@ public class SQLInteractive {
     private String url_list[] = new String[286];
 
     public SQLInteractive() {
+        System.out.println("[*] 开始进行数据库链接");
         startConnection();
         try {
             Statement stmt = dbCursor.createStatement();
